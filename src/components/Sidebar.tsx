@@ -64,9 +64,16 @@ const TrophyIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const BoxIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+  </svg>
+)
+
 const OWNER_NAVIGATION = [
   { name: 'Home', path: '/home', icon: HomeIcon },
   { name: 'Productos', path: '/products', icon: ShoppingBagIcon },
+  { name: 'Stock', path: '/stock', icon: BoxIcon },
   { name: 'Crear Orden', path: '/orders/create', icon: DocumentTextIcon },
   { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
   { name: 'Ranking', path: '/internal-ranking', icon: TrophyIcon },
@@ -82,7 +89,7 @@ const EMPLOYEE_NAVIGATION = [
   { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
   { name: 'Ranking', path: '/internal-ranking', icon: TrophyIcon },
   { name: 'Perfil', path: '/profile', icon: UserIcon },
-  
+
 ]
 
 interface SidebarProps {
@@ -121,16 +128,15 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
     <>
       {/* Overlay para móvil */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
-      <div className={`fixed left-0 top-0 z-50 h-full w-80 transform bg-white shadow-xl border-r border-gray-200 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      <div className={`fixed left-0 top-0 z-50 h-full w-80 transform bg-white shadow-xl border-r border-gray-200 transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
         <div className="flex flex-col h-full">
           {/* Header del Sidebar */}
           <div className="p-6 border-b border-gray-200">
@@ -149,16 +155,15 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
               {navigationItems.map((item) => {
                 const Icon = item.icon
                 const isActive = isActivePath(item.path)
-                
+
                 return (
                   <li key={item.name}>
                     <button
                       onClick={() => handleNavigation(item.path)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors duration-200 ${
-                        isActive
+                      className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors duration-200 ${isActive
                           ? 'bg-[#f74116]/10 text-[#f74116] border border-[#f74116]/20'
                           : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                      }`}
+                        }`}
                     >
                       <Icon className={`h-5 w-5 ${isActive ? 'text-[#f74116]' : 'text-gray-400'}`} />
                       <span className="font-medium">{item.name}</span>

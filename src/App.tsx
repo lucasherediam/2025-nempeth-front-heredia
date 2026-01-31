@@ -6,6 +6,7 @@ import Authentication from './Pages/Authentication'
 import Home from './Pages/Home'
 import EditProfile from './Pages/EditProfile'
 import Products from './Pages/Products'
+import Stock from './Pages/Stock'
 import BusinessInfo from './Pages/BusinessInfo'
 import CreateOrder from './Pages/CreateOrder'
 import SalesHistory from './Pages/SalesHistory'
@@ -121,6 +122,17 @@ function AppRoutes() {
           <OwnerGuard>
             <Layout>
               <Products />
+            </Layout>
+          </OwnerGuard>
+        }
+      />
+
+      <Route
+        path="/stock"
+        element={
+          <OwnerGuard>
+            <Layout>
+              <Stock />
             </Layout>
           </OwnerGuard>
         }
