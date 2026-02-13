@@ -410,12 +410,12 @@ function CreateOrder() {
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-4 py-2 text-sm font-semibold text-[#f74116] mb-4">
             <span className="h-2 w-2 rounded-full bg-[#f74116]" />
-            Gestión de Ventas - V2
+            Gestión de Ventas
           </div>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="mb-2 text-3xl font-bold text-gray-900 sm:text-4xl">
-                Crear Orden de Venta (V2)
+                Crear Orden de Venta
               </h1>
               <p className="text-gray-600">Gestiona órdenes abiertas y agrega productos</p>
             </div>

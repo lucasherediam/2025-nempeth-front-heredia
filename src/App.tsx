@@ -18,6 +18,9 @@ import CreateGoal from './Pages/CreateGoal'
 import GoalDetails from './Pages/GoalDetails'
 import Ranking from './Pages/Ranking'
 import InternalRanking from './Pages/InternalRanking'
+import PurchaseOrders from './Pages/PurchaseOrders'
+import CreatePurchaseOrder from './Pages/CreatePurchaseOrder'
+import PurchaseOrderDetails from './Pages/PurchaseOrderDetails'
 import Layout from './components/Layout'
 import UnauthenticatedGuard from './guards/UnauthenticatedGuard'
 import OwnerGuard from './guards/OwnerGuard'
@@ -133,6 +136,37 @@ function AppRoutes() {
           <OwnerGuard>
             <Layout>
               <Stock />
+            </Layout>
+          </OwnerGuard>
+        }
+      />
+
+      <Route
+        path="/purchase-orders"
+        element={
+          <OwnerGuard>
+            <Layout>
+              <PurchaseOrders />
+            </Layout>
+          </OwnerGuard>
+        }
+      />
+      <Route
+        path="/purchase-orders/create"
+        element={
+          <OwnerGuard>
+            <Layout>
+              <CreatePurchaseOrder />
+            </Layout>
+          </OwnerGuard>
+        }
+      />
+      <Route
+        path="/purchase-orders/:purchaseOrderId"
+        element={
+          <OwnerGuard>
+            <Layout>
+              <PurchaseOrderDetails />
             </Layout>
           </OwnerGuard>
         }
