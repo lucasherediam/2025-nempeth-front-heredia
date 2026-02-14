@@ -210,6 +210,7 @@ export default function DateRangePicker({
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))
   }
 
+  // Navegar al siguiente mes
   const nextMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))
   }
