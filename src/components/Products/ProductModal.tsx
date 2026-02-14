@@ -81,7 +81,6 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
 
-    // Limitar descripción a 300 caracteres
     let finalValue = value
     if (name === 'description' && value.length > 300) {
       finalValue = value.substring(0, 300)
