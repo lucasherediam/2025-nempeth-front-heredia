@@ -118,13 +118,13 @@ function Products() {
       setLoading(true)
       setError(null)
       const fetchedProducts = await productService.getProducts(businessId)
-      
+
       // Transformar los productos para extraer el categoryId del objeto category
       const transformedProducts = (fetchedProducts as ProductWithCategory[]).map((product) => ({
         ...product,
         categoryId: product.category?.id || ''
       })) as Product[]
-      
+
       setProducts(transformedProducts)
     } catch (err) {
       console.error('Error cargando productos:', err)
@@ -140,7 +140,7 @@ function Products() {
 
     // Filtrar por categoría
     if (selectedCategoryFilters.length > 0) {
-      filtered = filtered.filter(product => 
+      filtered = filtered.filter(product =>
         selectedCategoryFilters.includes(product.categoryId || '')
       )
     }
@@ -148,7 +148,7 @@ function Products() {
     // Filtrar por búsqueda
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
-      filtered = filtered.filter(product => 
+      filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(query) ||
         product.description.toLowerCase().includes(query)
       )
@@ -230,7 +230,7 @@ function Products() {
 
   const handleDeleteProduct = (product: Product) => {
     if (!businessId || processing || isDeleting) return
-    
+
     setProductToDelete(product)
     setShowDeleteModal(true)
   }
@@ -272,18 +272,21 @@ function Products() {
     try {
       setProcessing(true)
       setError(null) // Limpiar errores previos
-      
+
       if (productData.id) {
         // Editar producto existente
         await productService.updateProduct(
           businessId,
-          productData.id, 
+          productData.id,
           {
             name: productData.name,
             description: productData.description,
             price: productData.price,
             cost: productData.cost,
-            categoryId: productData.categoryId!
+            categoryId: productData.categoryId!,
+            stockQuantity: productData.stockQuantity,
+            stockUnit: productData.stockUnit,
+            reorderPoint: productData.reorderPoint
           }
         )
       } else {
@@ -293,17 +296,20 @@ function Products() {
           description: productData.description,
           price: productData.price,
           cost: productData.cost,
-          categoryId: productData.categoryId!
+          categoryId: productData.categoryId!,
+          stockQuantity: productData.stockQuantity,
+          stockUnit: productData.stockUnit,
+          reorderPoint: productData.reorderPoint
         })
       }
-      
+
       // Recargar la lista de productos para asegurar consistencia
       await loadProducts()
-      
+
       // Cerrar el modal después del guardado exitoso
       setIsModalOpen(false)
       setEditingProduct(null)
-      
+
     } catch (err) {
       console.error('Error guardando producto:', err)
       setError('Error al guardar el producto. Por favor, intenta nuevamente.')
@@ -315,8 +321,8 @@ function Products() {
 
   // Funciones para manejar filtros de categorías
   const handleToggleCategoryFilter = (categoryId: string) => {
-    setSelectedCategoryFilters(prev => 
-      prev.includes(categoryId) 
+    setSelectedCategoryFilters(prev =>
+      prev.includes(categoryId)
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
     )
@@ -338,7 +344,7 @@ function Products() {
   // Funciones para manejar categorías
   const handleAddCategory = async (category: Omit<CategoryType, 'id'>) => {
     if (!businessId) return
-    
+
     try {
       await categoryService.createCategory(businessId, category)
       await loadCategories() // Recargar categorías
@@ -350,7 +356,7 @@ function Products() {
 
   const handleEditCategory = async (id: string, category: Omit<CategoryType, 'id'>) => {
     if (!businessId) return
-    
+
     try {
       await categoryService.updateCategory(businessId, id, category)
       await loadCategories() // Recargar categorías
@@ -362,15 +368,15 @@ function Products() {
 
   const handleDeleteCategory = async (id: string) => {
     if (!businessId) return
-    
+
     // Verificar si hay productos asociados a esta categoría
     const productsWithCategory = products.filter(product => product.categoryId === id)
-    
+
     if (productsWithCategory.length > 0) {
       setError(`No se puede eliminar la categoría porque tiene ${productsWithCategory.length} producto(s) asociado(s). Primero debe reasignar o eliminar estos productos.`)
       return
     }
-    
+
     try {
       await categoryService.deleteCategory(businessId, id)
       await loadCategories() // Recargar categorías
@@ -383,7 +389,7 @@ function Products() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
       <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-4 py-2 text-sm font-semibold text-[#f74116] mb-4">
@@ -428,13 +434,13 @@ function Products() {
               <span className="text-xl font-bold">🍽️</span>
               {processing ? 'Procesando...' : 'Productos sugeridos'}
             </button>
-            
+
             {/* Powered by - debajo del botón */}
             <div className="flex items-center gap-1.5 pl-2">
               <span className="text-xs text-gray-500">Proporcionado por</span>
-              <img 
-                src="/QueComemos.svg" 
-                alt="Que Comemos" 
+              <img
+                src="/QueComemos.svg"
+                alt="Que Comemos"
                 className="h-4"
                 style={{ maxHeight: '16px' }}
               />
@@ -468,14 +474,14 @@ function Products() {
                 <IoFilterCircle className="w-4 h-4" />
                 <span className="text-sm font-medium">Filtrar por categoría</span>
               </button>
-              
+
               {/* Dropdown menu */}
               {showFilterDropdown && (
                 <div className="absolute left-0 z-50 w-64 py-2 mt-2 bg-white border border-gray-200 shadow-xl top-full rounded-xl">
                   <div className="px-4 py-2 border-b border-gray-100">
                     <h4 className="text-sm font-semibold text-gray-800">Seleccionar categorías</h4>
                   </div>
-                  
+
                   <div className="overflow-y-auto max-h-64">
                     {categories.map(category => (
                       <button
@@ -492,7 +498,7 @@ function Products() {
                       </button>
                     ))}
                   </div>
-                  
+
                   {selectedCategoryFilters.length > 0 && (
                     <div className="px-4 py-2 border-t border-gray-100">
                       <button
@@ -514,15 +520,15 @@ function Products() {
             {selectedCategoryFilters.map(categoryId => {
               const category = categories.find(cat => cat.id === categoryId)
               if (!category) return null
-              
+
               return (
-                <div 
+                <div
                   key={categoryId}
                   className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#f74116] bg-[#f74116]/10 border border-[#f74116]/20 rounded-full"
                 >
                   <span>{category.icon}</span>
                   <span>{category.name}</span>
-                  <button 
+                  <button
                     className="ml-1 font-bold text-[#f74116] hover:text-[#f74116]/80"
                     onClick={() => handleToggleCategoryFilter(categoryId)}
                     type="button"
@@ -570,7 +576,7 @@ function Products() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredProducts.map(product => (
                   <ProductCard

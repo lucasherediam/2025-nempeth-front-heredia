@@ -68,7 +68,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_BASE_URL: https://korven-api-56885c34702b.herokuapp.com
+          VITE_API_BASE_URL: https://korven-backend-92a1c865f972.herokuapp.com
 
   deploy-frontend:
     needs: [finish, build_check]

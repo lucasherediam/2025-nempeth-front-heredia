@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { type Product } from '../../services/productService'
+import { type Product, StockUnit } from '../../services/productService'
 import { type Category as CategoryType } from '../../services/categoryService'
 
 interface ProductModalProps {
@@ -18,7 +18,10 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
     description: '',
     price: 0,
     cost: 0,
-    categoryId: ''
+    categoryId: '',
+    stockQuantity: 0,
+    stockUnit: StockUnit.UNIDADES as StockUnit,
+    reorderPoint: 0
   })
   const [saving, setSaving] = useState(false)
 
@@ -29,7 +32,10 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
         description: product.description,
         price: product.price,
         cost: product.cost,
-        categoryId: product.categoryId ? product.categoryId : ''
+        categoryId: product.categoryId ? product.categoryId : '',
+        stockQuantity: product.stockQuantity ?? 0,
+        stockUnit: product.stockUnit ?? StockUnit.UNIDADES,
+        reorderPoint: product.reorderPoint ?? 0
       })
     } else {
       setFormData({
@@ -37,7 +43,10 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
         description: '',
         price: 0,
         cost: 0,
-        categoryId: categories.length > 0 ? categories[0].id : ''
+        categoryId: categories.length > 0 ? categories[0].id : '',
+        stockQuantity: 0,
+        stockUnit: StockUnit.UNIDADES,
+        reorderPoint: 0
       })
     }
     setSaving(false) // Resetear estado de guardado
@@ -80,7 +89,9 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
 
     setFormData(prev => ({
       ...prev,
-      [name]: (name === 'price' || name === 'cost') ? parseFloat(finalValue) || 0 : finalValue
+      [name]: (
+        name === 'price' || name === 'cost' || name === 'stockQuantity' || name === 'reorderPoint'
+      ) ? parseFloat(finalValue) || 0 : finalValue
     }))
   }
 
@@ -193,6 +204,56 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
             </div>
           </div>
 
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="space-y-1">
+              <label className="block text-sm font-semibold text-gray-700" htmlFor="stockQuantity">Cantidad en Stock</label>
+              <input
+                type="number"
+                id="stockQuantity"
+                name="stockQuantity"
+                value={formData.stockQuantity}
+                onChange={handleChange}
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 sm:py-3 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-sm font-semibold text-gray-700" htmlFor="stockUnit">Unidad</label>
+              <select
+                id="stockUnit"
+                name="stockUnit"
+                value={formData.stockUnit}
+                onChange={handleChange}
+                className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 sm:py-3 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+              >
+                {Object.entries(StockUnit).map(([key, value]) => (
+                  <option key={key} value={value}>
+                    {key.charAt(0) + key.slice(1).toLowerCase().replace('_', ' ')}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-sm font-semibold text-gray-700" htmlFor="reorderPoint">Punto de Reorden</label>
+              <input
+                type="number"
+                id="reorderPoint"
+                name="reorderPoint"
+                value={formData.reorderPoint}
+                onChange={handleChange}
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 sm:py-3 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+              />
+            </div>
+          </div>
+
+
           <div className="flex flex-col items-stretch justify-end gap-3 pt-4 border-t border-gray-200 sm:flex-row sm:items-center sm:pt-6">
             <button
               type="button"
@@ -210,9 +271,9 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
               {saving ? 'Guardando...' : (product ? 'Actualizar' : 'Guardar')}
             </button>
           </div>
-        </form>
-      </div>
-    </div>
+        </form >
+      </div >
+    </div >
   )
 }
 

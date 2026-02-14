@@ -1,5 +1,14 @@
 import api from './api';
 
+export const StockUnit = {
+  UNIDADES: 'UNIDADES',
+  KILOGRAMOS: 'KILOGRAMOS',
+  LITROS: 'LITROS',
+  PORCIONES: 'PORCIONES'
+} as const;
+
+export type StockUnit = typeof StockUnit[keyof typeof StockUnit];
+
 export interface Product {
   id: string;
   name: string;
@@ -7,6 +16,9 @@ export interface Product {
   price: number;
   cost: number;
   categoryId?: string;
+  stockQuantity?: number;
+  stockUnit?: StockUnit;
+  reorderPoint?: number;
 }
 
 export interface CreateProductRequest {
@@ -15,6 +27,9 @@ export interface CreateProductRequest {
   price: number;
   cost: number;
   categoryId: string;
+  stockQuantity?: number;
+  stockUnit?: StockUnit;
+  reorderPoint?: number;
 }
 
 export interface UpdateProductRequest {
@@ -23,6 +38,9 @@ export interface UpdateProductRequest {
   price: number;
   cost: number;
   categoryId: string;
+  stockQuantity?: number;
+  stockUnit?: StockUnit;
+  reorderPoint?: number;
 }
 
 export const productService = {
@@ -45,7 +63,7 @@ export const productService = {
       if (productData.description.length > 300) {
         throw new Error('La descripción no puede exceder 300 caracteres');
       }
-      
+
       const response = await api.post(
         `/businesses/${businessId}/products`,
         productData,
@@ -67,7 +85,7 @@ export const productService = {
       if (productData.description.length > 300) {
         throw new Error('La descripción no puede exceder 300 caracteres');
       }
-      
+
       const response = await api.put(
         `/businesses/${businessId}/products/${productId}`,
         productData,
