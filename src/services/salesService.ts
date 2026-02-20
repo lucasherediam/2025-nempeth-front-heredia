@@ -28,6 +28,7 @@ export interface Sale {
   total?: number
   isOpen?: boolean
   employeeId?: string
+  note?: string | null
 }
 
 export interface CreateSaleResponse {
@@ -104,6 +105,27 @@ export const salesService = {
       return response.data
     } catch (error) {
       console.error('Error closing sale:', error)
+      throw error
+    }
+  },
+
+  // Eliminar una orden
+  async deleteSale(businessId: string, saleId: string): Promise<void> {
+    try {
+      await api.delete(`/businesses/${businessId}/sales/${saleId}`)
+    } catch (error) {
+      console.error('Error deleting sale:', error)
+      throw error
+    }
+  },
+
+  // Actualizar una orden (nota)
+  async updateSale(businessId: string, saleId: string, data: { note: string }): Promise<Sale> {
+    try {
+      const response = await api.put(`/businesses/${businessId}/sales/${saleId}`, data)
+      return response.data
+    } catch (error) {
+      console.error('Error updating sale:', error)
       throw error
     }
   }
