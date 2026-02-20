@@ -76,27 +76,79 @@ const ShoppingCartIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-const OWNER_NAVIGATION = [
-  { name: 'Home', path: '/home', icon: HomeIcon },
-  { name: 'Productos', path: '/products', icon: ShoppingBagIcon },
-  { name: 'Stock', path: '/stock', icon: BoxIcon },
-  { name: 'Órdenes de Compra', path: '/purchase-orders', icon: ShoppingCartIcon },
-  { name: 'Crear Orden', path: '/orders/create', icon: DocumentTextIcon },
-  { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
-  { name: 'Ranking', path: '/internal-ranking', icon: TrophyIcon },
-  { name: 'Analiticas', path: '/analytics', icon: ChartBarIcon },
-  { name: 'Objetivos', path: '/goals', icon: TargetIcon },
-  { name: 'Mi Negocio', path: '/business', icon: BuildingStorefrontIcon },
-  { name: 'Perfil', path: '/profile', icon: UserIcon },
+interface NavItem {
+  name: string
+  path: string
+  icon: React.FC<{ className?: string }>
+}
+
+interface NavSection {
+  label?: string
+  items: NavItem[]
+}
+
+const OWNER_NAVIGATION: NavSection[] = [
+  {
+    items: [
+      { name: 'Home', path: '/home', icon: HomeIcon },
+    ]
+  },
+  {
+    label: 'VENTAS',
+    items: [
+      { name: 'Crear Venta', path: '/orders/create', icon: DocumentTextIcon },
+      { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
+    ]
+  },
+  {
+    label: 'INVENTARIO',
+    items: [
+      { name: 'Productos', path: '/products', icon: ShoppingBagIcon },
+      { name: 'Stock', path: '/stock', icon: BoxIcon },
+      { name: 'Órdenes de Compra', path: '/purchase-orders', icon: ShoppingCartIcon },
+    ]
+  },
+  {
+    label: 'INTELIGENCIA',
+    items: [
+      { name: 'Analíticas', path: '/analytics', icon: ChartBarIcon },
+      { name: 'Ranking', path: '/internal-ranking', icon: TrophyIcon },
+      { name: 'Objetivos', path: '/goals', icon: TargetIcon },
+    ]
+  },
+  {
+    label: 'CONFIGURACIÓN',
+    items: [
+      { name: 'Mi Negocio', path: '/business', icon: BuildingStorefrontIcon },
+      { name: 'Perfil', path: '/profile', icon: UserIcon },
+    ]
+  },
 ]
 
-const EMPLOYEE_NAVIGATION = [
-  { name: 'Home', path: '/home', icon: HomeIcon },
-  { name: 'Crear Orden', path: '/orders/create', icon: DocumentTextIcon },
-  { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
-  { name: 'Ranking', path: '/internal-ranking', icon: TrophyIcon },
-  { name: 'Perfil', path: '/profile', icon: UserIcon },
-
+const EMPLOYEE_NAVIGATION: NavSection[] = [
+  {
+    items: [
+      { name: 'Home', path: '/home', icon: HomeIcon },
+    ]
+  },
+  {
+    label: 'VENTAS',
+    items: [
+      { name: 'Crear Venta', path: '/orders/create', icon: DocumentTextIcon },
+      { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
+    ]
+  },
+  {
+    label: 'INTELIGENCIA',
+    items: [
+      { name: 'Ranking', path: '/internal-ranking', icon: TrophyIcon },
+    ]
+  },
+  {
+    items: [
+      { name: 'Perfil', path: '/profile', icon: UserIcon },
+    ]
+  },
 ]
 
 interface SidebarProps {
@@ -157,28 +209,41 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
 
           {/* Navegación */}
-          <nav className="flex-1 p-4">
-            <ul className="space-y-2">
-              {navigationItems.map((item) => {
-                const Icon = item.icon
-                const isActive = isActivePath(item.path)
+          <nav className="flex-1 p-4 overflow-y-auto">
+            <div className="space-y-1">
+              {navigationItems.map((section, sectionIndex) => (
+                <div key={sectionIndex}>
+                  {section.label && (
+                    <div className="pt-4 pb-1 first:pt-0">
+                      <p className="px-4 text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                        {section.label}
+                      </p>
+                    </div>
+                  )}
+                  <ul className="space-y-1">
+                    {section.items.map((item) => {
+                      const Icon = item.icon
+                      const isActive = isActivePath(item.path)
 
-                return (
-                  <li key={item.name}>
-                    <button
-                      onClick={() => handleNavigation(item.path)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors duration-200 ${isActive
-                        ? 'bg-[#f74116]/10 text-[#f74116] border border-[#f74116]/20'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
-                    >
-                      <Icon className={`h-5 w-5 ${isActive ? 'text-[#f74116]' : 'text-gray-400'}`} />
-                      <span className="font-medium">{item.name}</span>
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
+                      return (
+                        <li key={item.name}>
+                          <button
+                            onClick={() => handleNavigation(item.path)}
+                            className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors duration-200 ${isActive
+                              ? 'bg-[#f74116]/10 text-[#f74116] border border-[#f74116]/20'
+                              : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                              }`}
+                          >
+                            <Icon className={`h-5 w-5 ${isActive ? 'text-[#f74116]' : 'text-gray-400'}`} />
+                            <span className="font-medium">{item.name}</span>
+                          </button>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </nav>
 
           {/* Cerrar Sesión */}

@@ -15,7 +15,7 @@ import LoadingScreen from '../components/LoadingScreen'
 import EmptyState from '../components/Products/EmptyState'
 import SuccessOperation from '../components/SuccesOperation'
 import { OrderProductCard } from '../components/Orders'
-import { IoFilterCircle, IoSearchOutline, IoAddCircle, IoCheckmarkCircle, IoCloseCircle, IoTrashOutline, IoPencilOutline, IoCartOutline, IoClose } from 'react-icons/io5'
+import { IoFilterCircle, IoSearchOutline, IoAddCircle, IoCheckmarkCircle, IoCloseCircle, IoTrashOutline, IoPencilOutline, IoCartOutline, IoClose, IoDocumentTextOutline } from 'react-icons/io5'
 
 function CreateOrder() {
   const { user } = useAuth()
@@ -26,23 +26,30 @@ function CreateOrder() {
   const [selectedCategoryFilters, setSelectedCategoryFilters] = useState<string[]>([])
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  
+
   // Estados para manejar órdenes
   const [openSales, setOpenSales] = useState<Sale[]>([])
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null)
   const [selectedSaleItems, setSelectedSaleItems] = useState<SaleItem[]>([])
   const [isCreatingOrder, setIsCreatingOrder] = useState(false)
   const [isClosingOrder, setIsClosingOrder] = useState(false)
+  const [isDeletingOrder, setIsDeletingOrder] = useState(false)
+  const [showDeleteOrderModal, setShowDeleteOrderModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
-  
+
   // Estados para editar items
   const [editingItem, setEditingItem] = useState<SaleItem | null>(null)
   const [editQuantity, setEditQuantity] = useState(1)
-  
+
   // Estados para confirmar eliminación
   const [deletingItem, setDeletingItem] = useState<SaleItem | null>(null)
-  
+
+  // Estados para notas de la orden
+  const [isEditingNote, setIsEditingNote] = useState(false)
+  const [noteText, setNoteText] = useState('')
+  const [isSavingNote, setIsSavingNote] = useState(false)
+
   // Estado para controlar el carrito
   const [isCartOpen, setIsCartOpen] = useState(false)
 
@@ -67,13 +74,13 @@ function CreateOrder() {
       setLoading(true)
       setError(null)
       const fetchedProducts = await productService.getProducts(businessId)
-      
+
       // Transformar los productos para extraer el categoryId del objeto category
       const transformedProducts = (fetchedProducts as ProductWithCategory[]).map((product) => ({
         ...product,
         categoryId: product.category?.id || ''
       })) as Product[]
-      
+
       setProducts(transformedProducts)
     } catch (err) {
       console.error('Error cargando productos:', err)
@@ -106,7 +113,7 @@ function CreateOrder() {
       setError('Error al cargar los items de la orden')
     }
   }, [businessId])
-  
+
   // Actualizar la orden seleccionada cuando cambian las órdenes abiertas
   useEffect(() => {
     if (selectedSale && openSales.length > 0) {
@@ -126,7 +133,7 @@ function CreateOrder() {
 
     // Filtrar por categoría
     if (selectedCategoryFilters.length > 0) {
-      filtered = filtered.filter(product => 
+      filtered = filtered.filter(product =>
         selectedCategoryFilters.includes(product.categoryId || '')
       )
     }
@@ -134,7 +141,7 @@ function CreateOrder() {
     // Filtrar por búsqueda
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
-      filtered = filtered.filter(product => 
+      filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(query) ||
         product.description.toLowerCase().includes(query)
       )
@@ -196,8 +203,8 @@ function CreateOrder() {
 
   // Funciones para manejar filtros de categorías
   const handleToggleCategoryFilter = (categoryId: string) => {
-    setSelectedCategoryFilters(prev => 
-      prev.includes(categoryId) 
+    setSelectedCategoryFilters(prev =>
+      prev.includes(categoryId)
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
     )
@@ -224,22 +231,22 @@ function CreateOrder() {
     }
 
     setIsCreatingOrder(true)
-    
+
     try {
       const response = await salesService.createSale(businessId)
-      
+
       // Recargar las órdenes abiertas
       await loadOpenSales()
-      
+
       // Seleccionar automáticamente la nueva orden
       const newSale = openSales.find(s => s.id === response.saleId)
       if (newSale) {
         setSelectedSale(newSale)
       }
-      
+
       setSuccessMessage('Nueva orden creada exitosamente')
       setShowSuccessModal(true)
-      
+
     } catch (err) {
       console.error('Error creando orden:', err)
       setError('Error al crear la orden')
@@ -267,30 +274,30 @@ function CreateOrder() {
     try {
       // Verificar si el producto ya está en la orden
       const existingItem = selectedSaleItems.find(item => item.productName === product.name)
-      
+
       // Si ya existe, sumar la cantidad nueva a la existente
-      const totalQuantity = existingItem 
-        ? existingItem.quantity + quantity 
+      const totalQuantity = existingItem
+        ? existingItem.quantity + quantity
         : quantity
-      
+
       await salesService.addItemToSale(businessId, selectedSale.id, {
         productId: product.id,
         quantity: totalQuantity
       })
-      
+
       // Recargar las órdenes abiertas para actualizar los totales
       await loadOpenSales()
-      
+
       // Recargar los items de la orden seleccionada
       await loadSaleItems(selectedSale.id)
-      
+
       const message = existingItem
         ? `${product.name} actualizado (cantidad total: ${totalQuantity})`
         : `${product.name} agregado a la orden`
-      
+
       setSuccessMessage(message)
       setShowSuccessModal(true)
-      
+
     } catch (err) {
       console.error('Error agregando producto a la orden:', err)
       setError('Error al agregar el producto a la orden')
@@ -305,25 +312,80 @@ function CreateOrder() {
     }
 
     setIsClosingOrder(true)
-    
+
     try {
       await salesService.closeSale(businessId, selectedSale.id)
-      
+
       // Limpiar la orden seleccionada y sus items
       setSelectedSale(null)
       setSelectedSaleItems([])
-      
+
       // Recargar las órdenes abiertas
       await loadOpenSales()
-      
+
       setSuccessMessage('Orden cerrada exitosamente')
       setShowSuccessModal(true)
-      
+
     } catch (err) {
       console.error('Error cerrando orden:', err)
       setError('Error al cerrar la orden')
     } finally {
       setIsClosingOrder(false)
+    }
+  }
+
+  const handleDeleteOrder = () => {
+    if (!selectedSale) return
+    setShowDeleteOrderModal(true)
+  }
+
+  const confirmDeleteOrder = async () => {
+    if (!selectedSale || !businessId) return
+
+    setIsDeletingOrder(true)
+
+    try {
+      await salesService.deleteSale(businessId, selectedSale.id)
+
+      // Limpiar la orden seleccionada y sus items
+      setSelectedSale(null)
+      setSelectedSaleItems([])
+      setIsCartOpen(false)
+
+      // Recargar las órdenes abiertas
+      await loadOpenSales()
+
+      setShowDeleteOrderModal(false)
+      setSuccessMessage('Orden eliminada exitosamente')
+      setShowSuccessModal(true)
+
+    } catch (err) {
+      console.error('Error eliminando orden:', err)
+      setError('Error al eliminar la orden')
+    } finally {
+      setIsDeletingOrder(false)
+    }
+  }
+  const handleSaveNote = async () => {
+    if (!selectedSale || !businessId) return
+
+    setIsSavingNote(true)
+    try {
+      await salesService.updateSale(businessId, selectedSale.id, { note: noteText.trim() })
+
+      // Actualizar la orden seleccionada localmente
+      const updatedSale = { ...selectedSale, note: noteText.trim() || null }
+      setSelectedSale(updatedSale)
+      setOpenSales(prev => prev.map(s => s.id === updatedSale.id ? updatedSale : s))
+
+      setIsEditingNote(false)
+      setSuccessMessage(selectedSale.note ? 'Nota actualizada' : 'Nota agregada')
+      setShowSuccessModal(true)
+    } catch (err) {
+      console.error('Error guardando nota:', err)
+      setError('Error al guardar la nota')
+    } finally {
+      setIsSavingNote(false)
     }
   }
 
@@ -339,7 +401,7 @@ function CreateOrder() {
     try {
       // Buscar el producto por nombre para obtener su ID
       const product = products.find(p => p.name === editingItem.productName)
-      
+
       if (!product) {
         setError('No se pudo encontrar el producto')
         return
@@ -350,15 +412,15 @@ function CreateOrder() {
         productId: product.id,
         quantity: editQuantity
       })
-      
+
       // Recargar las órdenes y los items
       await loadOpenSales()
       await loadSaleItems(selectedSale.id)
-      
+
       setEditingItem(null)
       setSuccessMessage('Cantidad actualizada')
       setShowSuccessModal(true)
-      
+
     } catch (err) {
       console.error('Error actualizando item:', err)
       setError('Error al actualizar el item')
@@ -375,7 +437,7 @@ function CreateOrder() {
     try {
       // Buscar el producto por nombre para obtener su ID
       const product = products.find(p => p.name === deletingItem.productName)
-      
+
       if (!product) {
         setError('No se pudo encontrar el producto')
         return
@@ -386,15 +448,15 @@ function CreateOrder() {
         productId: product.id,
         quantity: 0
       })
-      
+
       // Recargar las órdenes y los items
       await loadOpenSales()
       await loadSaleItems(selectedSale.id)
-      
+
       setDeletingItem(null)
       setSuccessMessage(`${deletingItem.productName} eliminado de la orden`)
       setShowSuccessModal(true)
-      
+
     } catch (err) {
       console.error('Error eliminando item:', err)
       setError('Error al eliminar el item')
@@ -405,7 +467,7 @@ function CreateOrder() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
       <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-4 py-2 text-sm font-semibold text-[#f74116] mb-4">
@@ -415,9 +477,9 @@ function CreateOrder() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="mb-2 text-3xl font-bold text-gray-900 sm:text-4xl">
-                Crear Orden de Venta
+                Nueva Venta
               </h1>
-              <p className="text-gray-600">Gestiona órdenes abiertas y agrega productos</p>
+              <p className="text-gray-600">Gestiona ventas abiertas y agrega productos</p>
             </div>
             <button
               onClick={handleCreateNewOrder}
@@ -437,7 +499,7 @@ function CreateOrder() {
             <h2 className="text-xl font-bold text-gray-900">Órdenes Abiertas</h2>
             <span className="text-sm text-gray-500">{openSales.length} orden(es)</span>
           </div>
-          
+
           {openSales.length === 0 ? (
             <div className="py-8 text-center">
               <p className="text-gray-500">No hay órdenes abiertas. Crea una nueva para comenzar.</p>
@@ -449,15 +511,15 @@ function CreateOrder() {
                 const saleTotal = sale.items?.reduce((sum, item) => {
                   return sum + (item.lineTotal || 0)
                 }, 0) || 0
-                
+
                 return (
                   <button
                     key={sale.id}
                     onClick={() => handleSelectSale(sale)}
                     className={`
                       p-4 rounded-lg border-2 text-left transition-all duration-200
-                      ${selectedSale?.id === sale.id 
-                        ? 'border-[#f74116] bg-[#f74116]/5 shadow-md' 
+                      ${selectedSale?.id === sale.id
+                        ? 'border-[#f74116] bg-[#f74116]/5 shadow-md'
                         : 'border-gray-200 hover:border-[#f74116]/50 hover:shadow-sm'
                       }
                     `}
@@ -480,6 +542,46 @@ function CreateOrder() {
                         Total: <span className="font-semibold text-gray-900">${saleTotal.toFixed(2)}</span>
                       </p>
                     </div>
+                    {/* Nota de la orden */}
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      {sale.note ? (
+                        <div className="bg-amber-50 border border-amber-200 rounded-md p-2">
+                          <div className="flex items-start justify-between gap-1">
+                            <div className="flex items-start gap-1.5 flex-1 min-w-0">
+                              <IoDocumentTextOutline className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
+                              <p className="text-xs text-amber-900 break-words line-clamp-2">{sale.note}</p>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelectedSale(sale)
+                                setNoteText(sale.note || '')
+                                setIsEditingNote(true)
+                              }}
+                              className="p-0.5 text-amber-600 hover:bg-amber-100 rounded transition-colors flex-shrink-0"
+                              type="button"
+                              title="Editar nota"
+                            >
+                              <IoPencilOutline className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedSale(sale)
+                            setNoteText('')
+                            setIsEditingNote(true)
+                          }}
+                          className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-xs text-gray-400 border border-dashed border-gray-300 rounded-md hover:border-[#f74116]/50 hover:text-[#f74116] transition-colors"
+                          type="button"
+                        >
+                          <IoDocumentTextOutline className="w-3.5 h-3.5" />
+                          Agregar Nota
+                        </button>
+                      )}
+                    </div>
                   </button>
                 )
               })}
@@ -493,7 +595,7 @@ function CreateOrder() {
           const totalCalculado = selectedSaleItems.reduce((sum, item) => {
             return sum + (item.lineTotal || 0)
           }, 0)
-          
+
           return (
             <>
               {/* Botón flotante */}
@@ -517,9 +619,8 @@ function CreateOrder() {
 
               {/* Panel lateral del carrito */}
               <div
-                className={`fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${
-                  isCartOpen ? 'translate-x-0' : 'translate-x-full'
-                }`}
+                className={`fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isCartOpen ? 'translate-x-0' : 'translate-x-full'
+                  }`}
               >
                 <div className="flex flex-col h-full">
                   {/* Header del carrito */}
@@ -566,7 +667,7 @@ function CreateOrder() {
                           const unitCost = item.unitCost || 0
                           const quantity = item.quantity || 0
                           const subtotal = item.lineTotal || 0
-                          
+
                           return (
                             <div
                               key={item.id}
@@ -610,8 +711,8 @@ function CreateOrder() {
                     )}
                   </div>
 
-                  {/* Footer con botón de cerrar orden */}
-                  <div className="border-t border-gray-200 p-6 bg-gray-50">
+                  {/* Footer con botones de cerrar y eliminar orden */}
+                  <div className="border-t border-gray-200 p-6 bg-gray-50 space-y-3">
                     <button
                       onClick={handleCloseOrder}
                       disabled={isClosingOrder || selectedSaleItems.length === 0}
@@ -620,6 +721,15 @@ function CreateOrder() {
                     >
                       <IoCheckmarkCircle className="text-xl" />
                       {isClosingOrder ? 'Cerrando...' : 'Cerrar Orden'}
+                    </button>
+                    <button
+                      onClick={handleDeleteOrder}
+                      disabled={isDeletingOrder}
+                      className="w-full flex items-center justify-center gap-2 border-2 border-red-500 text-red-600 px-6 py-3 rounded-lg hover:bg-red-50 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      type="button"
+                    >
+                      <IoTrashOutline className="text-lg" />
+                      {isDeletingOrder ? 'Eliminando...' : 'Eliminar Orden'}
                     </button>
                   </div>
                 </div>
@@ -661,14 +771,14 @@ function CreateOrder() {
                 <IoFilterCircle className="w-4 h-4" />
                 <span className="text-sm font-medium">Filtrar por categoría</span>
               </button>
-              
+
               {/* Dropdown menu */}
               {showFilterDropdown && (
                 <div className="absolute left-0 z-50 w-64 py-2 mt-2 bg-white border border-gray-200 shadow-xl top-full rounded-xl">
                   <div className="px-4 py-2 border-b border-gray-100">
                     <h4 className="text-sm font-semibold text-gray-800">Seleccionar categorías</h4>
                   </div>
-                  
+
                   <div className="overflow-y-auto max-h-64">
                     {categories.map(category => (
                       <button
@@ -688,7 +798,7 @@ function CreateOrder() {
                       </button>
                     ))}
                   </div>
-                  
+
                   {selectedCategoryFilters.length > 0 && (
                     <div className="px-4 py-2 border-t border-gray-100">
                       <button
@@ -710,15 +820,15 @@ function CreateOrder() {
             {selectedCategoryFilters.map(categoryId => {
               const category = categories.find(cat => cat.id === categoryId)
               if (!category) return null
-              
+
               return (
-                <div 
+                <div
                   key={categoryId}
                   className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#f74116] bg-[#f74116]/10 border border-[#f74116]/20 rounded-full"
                 >
                   <span>{category.icon}</span>
                   <span>{category.name}</span>
-                  <button 
+                  <button
                     className="ml-1 font-bold text-[#f74116] hover:text-[#f74116]/80"
                     onClick={() => handleToggleCategoryFilter(categoryId)}
                     type="button"
@@ -764,7 +874,7 @@ function CreateOrder() {
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="py-16 text-center">
-              <EmptyState  />
+              <EmptyState />
             </div>
           ) : (
             <>
@@ -776,7 +886,7 @@ function CreateOrder() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredProducts.map(product => (
                   <OrderProductCard
@@ -805,7 +915,7 @@ function CreateOrder() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Editar Cantidad</h3>
-            
+
             <div className="mb-6">
               <p className="text-gray-700 mb-2">
                 <span className="font-semibold">Producto:</span> {editingItem.productName}
@@ -813,7 +923,7 @@ function CreateOrder() {
               <p className="text-sm text-gray-600 mb-4">
                 Precio unitario: ${(editingItem.unitCost || 0).toFixed(2)}
               </p>
-              
+
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Nueva cantidad:
               </label>
@@ -825,12 +935,12 @@ function CreateOrder() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
                 autoFocus
               />
-              
+
               <p className="text-sm text-gray-600 mt-2">
                 Nuevo subtotal: ${((editingItem.unitCost || 0) * editQuantity).toFixed(2)}
               </p>
             </div>
-            
+
             <div className="flex gap-3">
               <button
                 onClick={() => setEditingItem(null)}
@@ -851,20 +961,20 @@ function CreateOrder() {
         </div>
       )}
 
-      {/* Modal de confirmación de eliminación */}
+      {/* Modal de confirmación de eliminación de item */}
       {deletingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full">
               <IoTrashOutline className="w-8 h-8 text-red-600" />
             </div>
-            
+
             <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Eliminar Producto</h3>
-            
+
             <p className="text-gray-600 mb-6 text-center">
               ¿Estás seguro de eliminar <span className="font-semibold">{deletingItem.productName}</span> de la orden?
             </p>
-            
+
             <div className="flex gap-3">
               <button
                 onClick={() => setDeletingItem(null)}
@@ -879,6 +989,85 @@ function CreateOrder() {
                 type="button"
               >
                 Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de eliminación de orden */}
+      {showDeleteOrderModal && selectedSale && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full">
+              <IoTrashOutline className="w-8 h-8 text-red-600" />
+            </div>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Eliminar Orden</h3>
+
+            <p className="text-gray-600 mb-6 text-center">
+              ¿Estás seguro de que deseas eliminar la <span className="font-semibold">Orden #{selectedSale.id.slice(0, 8)}</span>? Esta acción no se puede deshacer.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteOrderModal(false)}
+                disabled={isDeletingOrder}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+                type="button"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteOrder}
+                disabled={isDeletingOrder}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50"
+                type="button"
+              >
+                {isDeletingOrder ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de edición de nota */}
+      {isEditingNote && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-amber-100 rounded-full">
+              <IoDocumentTextOutline className="w-8 h-8 text-amber-600" />
+            </div>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
+              {selectedSale?.note ? 'Editar Nota' : 'Agregar Nota'}
+            </h3>
+
+            <textarea
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="Escribe una nota para esta orden..."
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] resize-none transition-all"
+              rows={4}
+              autoFocus
+            />
+
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => setIsEditingNote(false)}
+                disabled={isSavingNote}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+                type="button"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveNote}
+                disabled={isSavingNote}
+                className="flex-1 px-4 py-2 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors font-medium disabled:opacity-50"
+                type="button"
+              >
+                {isSavingNote ? 'Guardando...' : 'Guardar'}
               </button>
             </div>
           </div>
