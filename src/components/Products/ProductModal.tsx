@@ -78,6 +78,10 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
     }
   }
 
+  const handleNumberFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select()
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
 
@@ -97,12 +101,14 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-2 sm:p-4 md:p-6">
-      <div className="w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl max-h-[90vh] overflow-y-auto bg-white shadow-2xl rounded-2xl">
-        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 sm:px-6 bg-gray-50">
+    <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-black/60 sm:items-center sm:p-4 md:p-6">
+      <div className="flex flex-col w-full max-w-lg sm:max-w-xl h-[92dvh] sm:h-auto sm:max-h-[90vh] bg-white shadow-2xl rounded-t-2xl sm:rounded-2xl">
+
+        {/* Header — siempre visible */}
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-4 border-b border-gray-200 sm:px-6 bg-gray-50 rounded-t-2xl">
           <h3 className="text-lg font-semibold text-gray-800 sm:text-xl">{product ? 'Editar Producto' : 'Agregar Producto'}</h3>
           <button
-            className="flex items-center justify-center w-8 h-8 text-xl text-gray-500 transition rounded-md sm:text-2xl hover:bg-gray-200 hover:text-gray-700"
+            className="flex items-center justify-center w-8 h-8 text-2xl text-gray-500 transition rounded-md hover:bg-gray-200 hover:text-gray-700"
             onClick={onClose}
             type="button"
           >
@@ -110,169 +116,177 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-4 py-4 space-y-4 sm:px-6 sm:py-6 sm:space-y-6">
-          {error && (
-            <div className="px-3 py-3 text-sm font-medium text-red-600 border border-red-200 rounded-md sm:px-4 bg-red-50">
-              {error}
-            </div>
-          )}
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto">
+          <form id="product-form" onSubmit={handleSubmit} className="px-4 py-4 space-y-4 sm:px-6 sm:py-5 sm:space-y-5">
+            {error && (
+              <div className="px-3 py-3 text-sm font-medium text-red-600 border border-red-200 rounded-md sm:px-4 bg-red-50">
+                {error}
+              </div>
+            )}
 
-          <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-700" htmlFor="name">Nombre del Producto</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              placeholder="Ingresa el nombre del producto"
-              className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 sm:py-3 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-700" htmlFor="categoryId">Categoría del Producto</label>
-            <select
-              id="categoryId"
-              name="categoryId"
-              value={formData.categoryId}
-              onChange={handleChange}
-              required
-              className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 sm:py-3 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
-            >
-              <option value="">Selecciona una categoría</option>
-              {categories.map(category => (
-                <option key={category.id} value={category.id}>
-                  {category.icon} {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-700" htmlFor="description">Descripción</label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              required
-              rows={3}
-              placeholder="Describe el producto"
-              className="w-full min-h-[4rem] rounded-lg border-2 border-gray-200 px-3 py-2 sm:py-3 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
-            />
-            <div className="flex justify-end">
-              <span className={`text-xs sm:text-sm ${formData.description.length > 280 ? 'text-orange-600' : formData.description.length === 300 ? 'text-red-600' : 'text-gray-500'}`}>
-                {formData.description.length}/300
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1">
-              <label className="block text-sm font-semibold text-gray-700" htmlFor="cost">Costo ($)</label>
+              <label className="block text-sm font-semibold text-gray-700" htmlFor="name">Nombre del Producto</label>
               <input
-                type="number"
-                id="cost"
-                name="cost"
-                value={formData.cost}
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
                 required
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 sm:py-3 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+                placeholder="Ingresa el nombre del producto"
+                className="w-full rounded-lg border-2 border-gray-200 px-3 py-2.5 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="block text-sm font-semibold text-gray-700" htmlFor="price">Precio ($)</label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                required
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 sm:py-3 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="space-y-1">
-              <label className="block text-sm font-semibold text-gray-700" htmlFor="stockQuantity">Cantidad en Stock</label>
-              <input
-                type="number"
-                id="stockQuantity"
-                name="stockQuantity"
-                value={formData.stockQuantity}
-                onChange={handleChange}
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 sm:py-3 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="block text-sm font-semibold text-gray-700" htmlFor="stockUnit">Unidad</label>
+              <label className="block text-sm font-semibold text-gray-700" htmlFor="categoryId">Categoría del Producto</label>
               <select
-                id="stockUnit"
-                name="stockUnit"
-                value={formData.stockUnit}
+                id="categoryId"
+                name="categoryId"
+                value={formData.categoryId}
                 onChange={handleChange}
-                className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 sm:py-3 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+                required
+                className="w-full rounded-lg border-2 border-gray-200 px-3 py-2.5 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
               >
-                {Object.entries(StockUnit).map(([key, value]) => (
-                  <option key={key} value={value}>
-                    {key.charAt(0) + key.slice(1).toLowerCase().replace('_', ' ')}
+                <option value="">Selecciona una categoría</option>
+                {categories.map(category => (
+                  <option key={category.id} value={category.id}>
+                    {category.icon} {category.name}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="block text-sm font-semibold text-gray-700" htmlFor="reorderPoint">Punto de Reorden</label>
-              <input
-                type="number"
-                id="reorderPoint"
-                name="reorderPoint"
-                value={formData.reorderPoint}
+              <label className="block text-sm font-semibold text-gray-700" htmlFor="description">Descripción</label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
                 onChange={handleChange}
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 sm:py-3 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+                required
+                rows={3}
+                placeholder="Describe el producto"
+                className="w-full min-h-[4rem] rounded-lg border-2 border-gray-200 px-3 py-2.5 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
               />
+              <div className="flex justify-end">
+                <span className={`text-xs sm:text-sm ${formData.description.length > 280 ? 'text-orange-600' : formData.description.length === 300 ? 'text-red-600' : 'text-gray-500'}`}>
+                  {formData.description.length}/300
+                </span>
+              </div>
             </div>
-          </div>
 
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="block text-sm font-semibold text-gray-700" htmlFor="cost">Costo ($)</label>
+                <input
+                  type="number"
+                  id="cost"
+                  name="cost"
+                  value={formData.cost}
+                  onChange={handleChange}
+                  onFocus={handleNumberFocus}
+                  required
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-2.5 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+                />
+              </div>
 
-          <div className="flex flex-col items-stretch justify-end gap-3 pt-4 border-t border-gray-200 sm:flex-row sm:items-center sm:pt-6">
-            <button
-              type="button"
-              className="order-2 px-4 py-2 text-sm font-semibold text-gray-700 transition bg-gray-200 rounded-lg hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60 sm:order-1"
-              onClick={onClose}
-              disabled={saving}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="rounded-lg bg-[#f74116] px-4 sm:px-5 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#f74116]/90 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 order-1 sm:order-2"
-              disabled={saving}
-            >
-              {saving ? 'Guardando...' : (product ? 'Actualizar' : 'Guardar')}
-            </button>
-          </div>
-        </form >
-      </div >
-    </div >
+              <div className="space-y-1">
+                <label className="block text-sm font-semibold text-gray-700" htmlFor="price">Precio ($)</label>
+                <input
+                  type="number"
+                  id="price"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  onFocus={handleNumberFocus}
+                  required
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-2.5 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="space-y-1">
+                <label className="block text-sm font-semibold text-gray-700" htmlFor="stockQuantity">Cantidad en Stock</label>
+                <input
+                  type="number"
+                  id="stockQuantity"
+                  name="stockQuantity"
+                  value={formData.stockQuantity}
+                  onChange={handleChange}
+                  onFocus={handleNumberFocus}
+                  min="0"
+                  step="0.01"
+                  placeholder="0"
+                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-2.5 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-sm font-semibold text-gray-700" htmlFor="stockUnit">Unidad</label>
+                <select
+                  id="stockUnit"
+                  name="stockUnit"
+                  value={formData.stockUnit}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-2.5 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+                >
+                  {Object.entries(StockUnit).map(([key, value]) => (
+                    <option key={key} value={value}>
+                      {key.charAt(0) + key.slice(1).toLowerCase().replace('_', ' ')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-span-2 sm:col-span-1 space-y-1">
+                <label className="block text-sm font-semibold text-gray-700" htmlFor="reorderPoint">Punto de Reorden</label>
+                <input
+                  type="number"
+                  id="reorderPoint"
+                  name="reorderPoint"
+                  value={formData.reorderPoint}
+                  onChange={handleChange}
+                  onFocus={handleNumberFocus}
+                  min="0"
+                  step="0.01"
+                  placeholder="0"
+                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-2.5 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+                />
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* Footer — siempre visible */}
+        <div className="flex-shrink-0 flex items-center justify-end gap-3 px-4 py-4 border-t border-gray-200 sm:px-6 bg-white rounded-b-2xl">
+          <button
+            type="button"
+            className="px-4 py-2.5 text-sm font-semibold text-gray-700 transition bg-gray-200 rounded-lg hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={onClose}
+            disabled={saving}
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            form="product-form"
+            className="rounded-lg bg-[#f74116] px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#f74116]/90 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={saving}
+          >
+            {saving ? 'Guardando...' : (product ? 'Actualizar' : 'Guardar')}
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 

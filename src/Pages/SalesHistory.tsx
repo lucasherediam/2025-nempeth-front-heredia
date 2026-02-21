@@ -28,7 +28,7 @@ function SalesHistory() {
     try {
       setLoading(true)
       setError(null)
-      const salesData = await salesManagementService.getAllSales(businessId)
+      const salesData = await salesManagementService.getClosedSales(businessId)
       setSales(salesData)
     } catch (err) {
       console.error('Error cargando ventas:', err)
@@ -90,22 +90,22 @@ function SalesHistory() {
     return sales.filter(sale => {
       const saleDate = new Date(sale.occurredAt)
       const saleDateLocal = toLocalDate(saleDate)
-      
+
       // Obtener solo la fecha (sin hora) para comparación
       const saleDateOnly = new Date(saleDateLocal.getFullYear(), saleDateLocal.getMonth(), saleDateLocal.getDate())
-      
+
       let isWithinRange = true
-      
+
       if (startDate) {
         const startDateObj = new Date(startDate)
         isWithinRange = isWithinRange && saleDateOnly >= startDateObj
       }
-      
+
       if (endDate) {
         const endDateObj = new Date(endDate)
         isWithinRange = isWithinRange && saleDateOnly <= endDateObj
       }
-      
+
       return isWithinRange
     })
   }
@@ -118,8 +118,8 @@ function SalesHistory() {
         const dateB = new Date(b.occurredAt).getTime()
         return sortOrder === 'asc' ? dateA - dateB : dateB - dateA
       } else {
-        return sortOrder === 'asc' 
-          ? a.totalAmount - b.totalAmount 
+        return sortOrder === 'asc'
+          ? a.totalAmount - b.totalAmount
           : b.totalAmount - a.totalAmount
       }
     })
@@ -160,7 +160,7 @@ function SalesHistory() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         {/* Header */}
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-4 py-2 text-sm font-semibold text-[#f74116] mb-4">
@@ -171,7 +171,7 @@ function SalesHistory() {
             Registro de Ventas
           </h1>
           <p className="text-gray-600 mt-2">
-            {getSortedSales().length} de {sales.length} {sales.length === 1 ? 'venta' : 'ventas'} 
+            {getSortedSales().length} de {sales.length} {sales.length === 1 ? 'venta' : 'ventas'}
             {(startDate || endDate) && ' (filtrado)'}
           </p>
         </div>
@@ -179,7 +179,7 @@ function SalesHistory() {
         {/* Tarjeta de Resumen */}
         <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200 mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            
+
             {/* Total de ventas */}
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
@@ -198,22 +198,21 @@ function SalesHistory() {
 
             {/* Controles de filtros y ordenamiento */}
             <div className="flex flex-col sm:flex-row gap-4">
-              
+
               {/* Filtros de fecha */}
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowDateFilter(!showDateFilter)}
-                    className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
-                      showDateFilter || startDate || endDate
-                        ? 'bg-[#f74116] text-white' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${showDateFilter || startDate || endDate
+                      ? 'bg-[#f74116] text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
                   >
                     <IoFunnelOutline className="w-4 h-4" />
                     <span>Filtrar por fecha</span>
                   </button>
-                  
+
                   {(startDate || endDate) && (
                     <button
                       onClick={clearDateFilter}
@@ -223,21 +222,21 @@ function SalesHistory() {
                     </button>
                   )}
                 </div>
-                
+
                 {showDateFilter && (
-                  <div className="flex items-center gap-2 text-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm">
                     <input
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
+                      className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
                     />
-                    <span className="text-gray-500">hasta</span>
+                    <span className="text-gray-500 text-center sm:text-left">hasta</span>
                     <input
                       type="date"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
+                      className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
                     />
                   </div>
                 )}
@@ -249,11 +248,10 @@ function SalesHistory() {
                 <span className="text-sm text-gray-600">Ordenar:</span>
                 <button
                   onClick={() => handleSort('date')}
-                  className={`flex items-center gap-1 px-3 py-1 text-sm rounded-lg transition-colors ${
-                    sortField === 'date' 
-                      ? 'bg-[#f74116] text-white' 
-                      : 'text-gray-600 hover:bg-gray-200'
-                  }`}
+                  className={`flex items-center gap-1 px-3 py-1 text-sm rounded-lg transition-colors ${sortField === 'date'
+                    ? 'bg-[#f74116] text-white'
+                    : 'text-gray-600 hover:bg-gray-200'
+                    }`}
                 >
                   <IoCalendarOutline className="w-4 h-4" />
                   <span>Fecha</span>
@@ -265,11 +263,10 @@ function SalesHistory() {
                 </button>
                 <button
                   onClick={() => handleSort('amount')}
-                  className={`flex items-center gap-1 px-3 py-1 text-sm rounded-lg transition-colors ${
-                    sortField === 'amount' 
-                      ? 'bg-[#f74116] text-white' 
-                      : 'text-gray-600 hover:bg-gray-200'
-                  }`}
+                  className={`flex items-center gap-1 px-3 py-1 text-sm rounded-lg transition-colors ${sortField === 'amount'
+                    ? 'bg-[#f74116] text-white'
+                    : 'text-gray-600 hover:bg-gray-200'
+                    }`}
                 >
                   <IoCashOutline className="w-4 h-4" />
                   <span>Monto</span>
@@ -319,7 +316,7 @@ function SalesHistory() {
                   Mostrando {getSortedSales().length} {getSortedSales().length === 1 ? 'resultado' : 'resultados'}
                 </p>
               </div>
-              
+
               {getSortedSales().map((sale) => (
                 <div
                   key={sale.id}
@@ -331,11 +328,11 @@ function SalesHistory() {
                         <IoReceiptOutline className="w-6 h-6 text-[#f74116]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
                           <h3 className="text-lg font-semibold text-gray-900">
                             Venta #{sale.id.substring(0, 8)}
                           </h3>
-                          <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-[#f74116] bg-[#f74116]/10 rounded-full">
+                          <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-[#f74116] bg-[#f74116]/10 rounded-full whitespace-nowrap">
                             {sale.items.length} {sale.items.length === 1 ? 'producto' : 'productos'}
                           </span>
                         </div>
@@ -352,7 +349,7 @@ function SalesHistory() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                       <div className="text-right">
                         <div className="flex items-center gap-1 text-2xl font-bold text-green-600 mb-1">

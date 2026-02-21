@@ -175,7 +175,7 @@ function CreatePurchaseOrder() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
             <div className="px-4 py-8 mx-auto max-w-5xl sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="mb-8">
@@ -242,10 +242,10 @@ function CreatePurchaseOrder() {
                                     return (
                                         <div
                                             key={item.tempId}
-                                            className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                                            className="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200"
                                         >
-                                            {/* Product Select */}
-                                            <div className="md:col-span-5">
+                                            {/* Product Select - full width */}
+                                            <div>
                                                 <label className="block mb-1 text-xs font-medium text-gray-700">
                                                     Producto <span className="text-red-500">*</span>
                                                 </label>
@@ -264,59 +264,60 @@ function CreatePurchaseOrder() {
                                                 </select>
                                             </div>
 
-                                            {/* Quantity */}
-                                            <div className="md:col-span-2">
-                                                <label className="block mb-1 text-xs font-medium text-gray-700">
-                                                    Cantidad <span className="text-red-500">*</span>
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    value={item.quantity}
-                                                    onChange={(e) => updateItem(item.tempId, 'quantity', parseFloat(e.target.value) || 0)}
-                                                    min="0.01"
-                                                    step="0.01"
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
-                                                    required
-                                                />
-                                            </div>
+                                            {/* Quantity + Unit Cost + Subtotal in a row */}
+                                            <div className="grid grid-cols-3 gap-2">
+                                                <div>
+                                                    <label className="block mb-1 text-xs font-medium text-gray-700">
+                                                        Cantidad <span className="text-red-500">*</span>
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        value={item.quantity}
+                                                        onChange={(e) => updateItem(item.tempId, 'quantity', parseInt(e.target.value) || 0)}
+                                                        onFocus={(e) => e.target.select()}
+                                                        min="1"
+                                                        step="1"
+                                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
+                                                        required
+                                                    />
+                                                </div>
 
-                                            {/* Unit Cost */}
-                                            <div className="md:col-span-2">
-                                                <label className="block mb-1 text-xs font-medium text-gray-700">
-                                                    Costo Unitario <span className="text-red-500">*</span>
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    value={item.unitCost}
-                                                    onChange={(e) => updateItem(item.tempId, 'unitCost', parseFloat(e.target.value) || 0)}
-                                                    min="0.01"
-                                                    step="0.01"
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
-                                                    required
-                                                />
-                                            </div>
+                                                <div>
+                                                    <label className="block mb-1 text-xs font-medium text-gray-700">
+                                                        Costo Unit. <span className="text-red-500">*</span>
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        value={item.unitCost}
+                                                        onChange={(e) => updateItem(item.tempId, 'unitCost', parseFloat(e.target.value) || 0)}
+                                                        onFocus={(e) => e.target.select()}
+                                                        min="0.01"
+                                                        step="0.01"
+                                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
+                                                        required
+                                                    />
+                                                </div>
 
-                                            {/* Subtotal */}
-                                            <div className="md:col-span-2">
-                                                <label className="block mb-1 text-xs font-medium text-gray-700">
-                                                    Subtotal
-                                                </label>
-                                                <div className="px-3 py-2 text-sm font-semibold text-gray-900 bg-gray-100 rounded-lg">
-                                                    {formatCurrency(calculateItemTotal(item))}
+                                                <div>
+                                                    <label className="block mb-1 text-xs font-medium text-gray-700">
+                                                        Subtotal
+                                                    </label>
+                                                    <div className="px-3 py-2 text-sm font-semibold text-gray-900 bg-gray-100 rounded-lg truncate">
+                                                        {formatCurrency(calculateItemTotal(item))}
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            {/* Remove Button */}
-                                            <div className="md:col-span-1 flex items-end">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeItem(item.tempId)}
-                                                    className="w-full px-3 py-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                                                    title="Eliminar producto"
-                                                >
-                                                    <IoTrash className="w-4 h-4 mx-auto" />
-                                                </button>
-                                            </div>
+                                            {/* Remove button */}
+                                            <button
+                                                type="button"
+                                                onClick={() => removeItem(item.tempId)}
+                                                className="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                                                title="Eliminar producto"
+                                            >
+                                                <IoTrash className="w-4 h-4" />
+                                                Eliminar
+                                            </button>
                                         </div>
                                     )
                                 })}

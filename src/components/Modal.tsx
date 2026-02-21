@@ -5,7 +5,7 @@ interface ModalProps {
   onClose: () => void
   title: string
   message: string
-  type?: 'success' | 'error' | 'info'
+  type?: 'success' | 'error' | 'info' | 'primary'
   showCancelButton?: boolean
   onConfirm?: () => void
   confirmText?: string
@@ -45,6 +45,23 @@ const Modal: React.FC<ModalProps> = ({
     const baseIconClasses = 'flex h-10 w-10 items-center justify-center rounded-full'
 
     switch (type) {
+      case 'primary':
+        return (
+          <div className={`${baseIconClasses} bg-[#f74116]/10 text-[#f74116]`}>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v6" />
+              <path d="M12 16h.01" />
+            </svg>
+          </div>
+        )
       case 'success':
         return (
           <div className={`${baseIconClasses} bg-green-100 text-green-600`}>
@@ -151,7 +168,9 @@ const Modal: React.FC<ModalProps> = ({
                 ? 'bg-red-600 hover:bg-red-500 focus:ring-red-200'
                 : type === 'success'
                   ? 'bg-green-600 hover:bg-green-500 focus:ring-green-200'
-                  : 'bg-blue-600 hover:bg-blue-500 focus:ring-blue-200'
+                  : type === 'primary'
+                    ? 'bg-[#f74116] hover:bg-[#d63912] focus:ring-[#f74116]/30'
+                    : 'bg-blue-600 hover:bg-blue-500 focus:ring-blue-200'
             }`}
             onClick={handleConfirm}
           >

@@ -4,7 +4,7 @@ import LoadingScreen from '../components/LoadingScreen'
 import Modal from '../components/Modal'
 import { GoalsService, type ActiveGoalSummaryResponse } from '../services/goalsService'
 import { useAuth } from '../contexts/useAuth'
-import { IoSearchOutline, IoSwapVerticalOutline, IoCalendarOutline, IoTimeOutline, IoCheckmarkCircleOutline, IoCashOutline } from 'react-icons/io5'
+import { IoSearchOutline, IoCalendarOutline, IoTimeOutline, IoCheckmarkCircleOutline, IoCashOutline } from 'react-icons/io5'
 
 function Goals() {
   const navigate = useNavigate()
@@ -224,14 +224,14 @@ function Goals() {
         {/* Tabla de metas */}
         <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Metas Activas</h2>
                 <p className="text-sm text-gray-600">Objetivos y progreso actual</p>
               </div>
               <button
                 onClick={() => navigate('/goals/create')}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#f74116] text-white text-sm font-medium rounded-lg hover:bg-[#f74116]/90 transition-colors"
+                className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-[#f74116] text-white text-sm font-medium rounded-lg hover:bg-[#f74116]/90 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -241,32 +241,28 @@ function Goals() {
             </div>
           </div>
 
-          {/* Controles de búsqueda y ordenamiento */}
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
-            <div className="flex flex-col lg:flex-row gap-4">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+            <div className="flex flex-col gap-3">
               
               {/* Buscador */}
-              <div className="flex-1">
-                <div className="relative">
-                  <IoSearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Buscar metas por nombre..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] transition-colors"
-                  />
-                </div>
+              <div className="relative">
+                <IoSearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Buscar metas por nombre..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] transition-colors"
+                />
               </div>
 
-              {/* Controles de ordenamiento */}
+              {/* Controles de ordenamiento - scroll horizontal en mobile */}
               <div className="flex items-center gap-2">
-                <IoSwapVerticalOutline className="w-5 h-5 text-gray-600" />
-                <span className="text-sm text-gray-600 font-medium">Ordenar:</span>
-                <div className="flex gap-2">
+                <span className="text-sm text-gray-600 font-medium flex-shrink-0">Ordenar:</span>
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                   <button
                     onClick={() => handleSort('period')}
-                    className={`flex items-center gap-1 px-3 py-2 text-sm rounded-lg transition-colors ${
+                    className={`flex-shrink-0 flex items-center gap-1 px-3 py-2 text-sm rounded-lg transition-colors ${
                       sortField === 'period' 
                         ? 'bg-[#f74116] text-white' 
                         : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
@@ -274,15 +270,11 @@ function Goals() {
                   >
                     <IoCalendarOutline className="w-4 h-4" />
                     <span>Período</span>
-                    {sortField === 'period' && (
-                      <span className="text-xs ml-1">
-                        {sortOrder === 'desc' ? '↓' : '↑'}
-                      </span>
-                    )}
+                    {sortField === 'period' && <span className="text-xs ml-1">{sortOrder === 'desc' ? '↓' : '↑'}</span>}
                   </button>
                   <button
                     onClick={() => handleSort('daysRemaining')}
-                    className={`flex items-center gap-1 px-3 py-2 text-sm rounded-lg transition-colors ${
+                    className={`flex-shrink-0 flex items-center gap-1 px-3 py-2 text-sm rounded-lg transition-colors ${
                       sortField === 'daysRemaining' 
                         ? 'bg-[#f74116] text-white' 
                         : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
@@ -290,15 +282,11 @@ function Goals() {
                   >
                     <IoTimeOutline className="w-4 h-4" />
                     <span>Días restantes</span>
-                    {sortField === 'daysRemaining' && (
-                      <span className="text-xs ml-1">
-                        {sortOrder === 'desc' ? '↓' : '↑'}
-                      </span>
-                    )}
+                    {sortField === 'daysRemaining' && <span className="text-xs ml-1">{sortOrder === 'desc' ? '↓' : '↑'}</span>}
                   </button>
                   <button
                     onClick={() => handleSort('categoriesCompleted')}
-                    className={`flex items-center gap-1 px-3 py-2 text-sm rounded-lg transition-colors ${
+                    className={`flex-shrink-0 flex items-center gap-1 px-3 py-2 text-sm rounded-lg transition-colors ${
                       sortField === 'categoriesCompleted' 
                         ? 'bg-[#f74116] text-white' 
                         : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
@@ -306,15 +294,11 @@ function Goals() {
                   >
                     <IoCheckmarkCircleOutline className="w-4 h-4" />
                     <span>Categorías</span>
-                    {sortField === 'categoriesCompleted' && (
-                      <span className="text-xs ml-1">
-                        {sortOrder === 'desc' ? '↓' : '↑'}
-                      </span>
-                    )}
+                    {sortField === 'categoriesCompleted' && <span className="text-xs ml-1">{sortOrder === 'desc' ? '↓' : '↑'}</span>}
                   </button>
                   <button
                     onClick={() => handleSort('totalTarget')}
-                    className={`flex items-center gap-1 px-3 py-2 text-sm rounded-lg transition-colors ${
+                    className={`flex-shrink-0 flex items-center gap-1 px-3 py-2 text-sm rounded-lg transition-colors ${
                       sortField === 'totalTarget' 
                         ? 'bg-[#f74116] text-white' 
                         : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
@@ -322,18 +306,76 @@ function Goals() {
                   >
                     <IoCashOutline className="w-4 h-4" />
                     <span>Monto</span>
-                    {sortField === 'totalTarget' && (
-                      <span className="text-xs ml-1">
-                        {sortOrder === 'desc' ? '↓' : '↑'}
-                      </span>
-                    )}
+                    {sortField === 'totalTarget' && <span className="text-xs ml-1">{sortOrder === 'desc' ? '↓' : '↑'}</span>}
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile: cards */}
+          <div className="divide-y divide-gray-100 md:hidden">
+            {filteredAndSortedGoals.map((goal) => {
+              const daysRemaining = calculateDaysRemaining(goal.daysRemaining)
+              return (
+                <div key={goal.id} className="px-4 py-4 flex flex-col gap-3">
+                  {/* Nombre + meta */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-gray-900 truncate">{goal.name}</p>
+                      <p className="text-sm text-gray-500">Meta: <span className="font-semibold text-[#f74116]">${goal.totalTarget.toLocaleString()}</span></p>
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => navigate(`/goals/${goal.id}`)}
+                        className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-[#f74116] bg-[#f74116]/10 rounded-lg hover:bg-[#f74116]/20 transition-colors"
+                      >
+                        Ver
+                      </button>
+                      <button
+                        onClick={() => { setGoalToDelete({id: goal.id, name: goal.name}); setIsDeleteModalOpen(true) }}
+                        disabled={deletingGoalId === goal.id}
+                        className="inline-flex items-center px-2 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                      >
+                        {deletingGoalId === goal.id ? (
+                          <div className="w-3 h-3 border-2 border-red-600 rounded-full border-t-transparent animate-spin" />
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Info row */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="bg-gray-50 rounded-lg px-3 py-2">
+                      <p className="text-xs text-gray-500 mb-0.5">Período</p>
+                      <p className="text-xs font-medium text-gray-900">{formatDateRange(goal.periodStart, goal.periodEnd)}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg px-3 py-2">
+                      <p className="text-xs text-gray-500 mb-0.5">Días restantes</p>
+                      <p className={`text-xs font-semibold ${
+                        daysRemaining.days < 0 ? 'text-red-600' :
+                        daysRemaining.days <= 7 ? 'text-orange-600' : 'text-gray-900'
+                      }`}>{daysRemaining.text}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg px-3 py-2">
+                      <p className="text-xs text-gray-500 mb-0.5">Categorías</p>
+                      <p className={`text-xs font-semibold ${
+                        goal.categoriesCompleted === goal.categoriesTotal ? 'text-green-600' :
+                        goal.categoriesCompleted > 0 ? 'text-orange-600' : 'text-red-600'
+                      }`}>{goal.categoriesCompleted}/{goal.categoriesTotal}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Desktop: tabla */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>

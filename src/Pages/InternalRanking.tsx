@@ -258,30 +258,32 @@ export default function InternalRanking() {
 
           {/* Empleado del mes destacado */}
           {employeeRankings.length > 0 && (
-            <div className="mb-6 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-6 border-2 border-amber-300">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-4xl">👑</div>
-                <div>
-                  <p className="text-sm font-semibold text-amber-700">Empleado del Mes</p>
-                  <h3 className="text-2xl font-bold text-gray-900">
+            <div className="mb-6 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-5 border-2 border-amber-300">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 border-2 border-amber-300 flex-shrink-0 text-3xl">
+                  👑
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide">Empleado del Mes</p>
+                  <h3 className="text-xl font-bold text-gray-900 truncate">
                     {employeeRankings[0].name} {employeeRankings[0].lastName}
                   </h3>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-lg">
-                  <IoFlame className="w-5 h-5 text-orange-500" />
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Ventas</p>
-                    <p className="text-xl font-bold text-gray-900">{employeeRankings[0].sales}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2 px-3 py-2.5 bg-white rounded-lg">
+                  <IoFlame className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-gray-500">Ventas</p>
+                    <p className="text-lg font-bold text-gray-900">{employeeRankings[0].sales}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-lg">
-                  <span className="text-lg">💰</span>
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Ingresos</p>
-                    <p className="text-xl font-bold text-gray-900">
-                      ${employeeRankings[0].revenue.toLocaleString()}
+                <div className="flex items-center gap-2 px-3 py-2.5 bg-white rounded-lg">
+                  <span className="text-base flex-shrink-0">💰</span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-gray-500">Ingresos</p>
+                    <p className="text-lg font-bold text-gray-900 truncate">
+                      ${employeeRankings[0].revenue.toLocaleString('es-AR')}
                     </p>
                   </div>
                 </div>
@@ -339,63 +341,57 @@ export default function InternalRanking() {
                       'bg-gray-50/50 border-gray-200 hover:border-[#f74116]/30'}
                   `}
                 >
-                  {isCurrentUser && (
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="px-3 py-1 text-xs font-bold text-blue-700 bg-blue-200 rounded-full">
-                        🌟 Tú
-                      </div>
-                    </div>
-                  )}
-                <div className="flex items-center justify-between gap-4">
-                  {/* Posición y nombre */}
-                  <div className="flex items-center flex-1 gap-4">
+                  {/* Fila superior: posición + nombre + badge */}
+                  <div className="flex items-center gap-3 mb-3">
                     <div className="relative flex-shrink-0">
                       <div
-                        className={`
-                          flex items-center justify-center w-12 h-12 rounded-full text-lg font-bold text-white
-                          bg-gradient-to-br ${getPositionColor(employee.position)}
-                        `}
+                        className={`flex items-center justify-center w-11 h-11 rounded-full text-base font-bold text-white bg-gradient-to-br ${getPositionColor(employee.position)}`}
                       >
                         {employee.position}
                       </div>
                       {getMedalEmoji(employee.position) && (
-                        <div className="absolute text-2xl -top-1 -right-1">
+                        <div className="absolute text-xl -top-1 -right-1">
                           {getMedalEmoji(employee.position)}
                         </div>
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-gray-900 truncate">
-                        {employee.name} {employee.lastName}
-                      </h3>
-                      <p className="text-sm text-gray-600">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-bold text-gray-900 truncate">
+                          {employee.name} {employee.lastName}
+                        </h3>
+                        {isCurrentUser && (
+                          <span className="px-2 py-0.5 text-xs font-bold text-blue-700 bg-blue-200 rounded-full flex-shrink-0">
+                            🌟 Tú
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500">
                         {employee.position === 1 ? 'Empleado del Mes' : `Posición #${employee.position}`}
                       </p>
                     </div>
                   </div>
 
-                  {/* Estadísticas */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <IoFlame className="w-4 h-4 text-orange-500" />
-                        <p className="text-xs font-medium text-gray-600">Ventas</p>
+                  {/* Fila inferior: estadísticas */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-white/60 rounded-lg">
+                      <IoFlame className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-gray-500">Ventas</p>
+                        <p className="text-base font-bold text-gray-900">{employee.sales}</p>
                       </div>
-                      <p className="text-xl font-bold text-gray-900">{employee.sales}</p>
                     </div>
-
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <span className="text-sm">💰</span>
-                        <p className="text-xs font-medium text-gray-600">Ingresos</p>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-white/60 rounded-lg">
+                      <span className="text-sm flex-shrink-0">💰</span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-gray-500">Ingresos</p>
+                        <p className="text-base font-bold text-gray-900 truncate">
+                          ${employee.revenue.toLocaleString('es-AR')}
+                        </p>
                       </div>
-                      <p className="text-xl font-bold text-gray-900">
-                        ${employee.revenue}
-                      </p>
                     </div>
                   </div>
-                </div>
 
                 {/* Barra de progreso para top 3 */}
                 {employee.position <= 3 && (
