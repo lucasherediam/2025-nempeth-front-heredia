@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/useAuth'
 import LoadingScreen from '../components/LoadingScreen'
+import Modal from '../components/Modal'
 import { purchaseOrderService, type PurchaseOrderListItem, type PurchaseOrderStatus } from '../services/purchaseOrderService'
 import {
     IoReceiptOutline,
@@ -27,6 +28,11 @@ function PurchaseOrders() {
     const [processing, setProcessing] = useState<string | null>(null)
     const [sortField, setSortField] = useState<SortField>('date')
     const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+    const [confirmModal, setConfirmModal] = useState<{
+        open: boolean
+        type: 'receive' | 'cancel'
+        orderId: string
+    }>({ open: false, type: 'receive', orderId: '' })
 
     useEffect(() => {
         if (user?.businessId) {
@@ -50,41 +56,30 @@ function PurchaseOrders() {
         }
     }
 
-    const handleReceiveOrder = async (orderId: string, event: React.MouseEvent) => {
+    const handleReceiveOrder = (orderId: string, event: React.MouseEvent) => {
         event.stopPropagation()
         if (!user?.businessId) return
-
-        if (!confirm('¿Estás seguro de marcar esta orden como recibida? Esta acción no se puede deshacer.')) {
-            return
-        }
-
-        try {
-            setProcessing(orderId)
-            await purchaseOrderService.receivePurchaseOrder(user.businessId, orderId)
-            await loadPurchaseOrders()
-        } catch (err) {
-            console.error('Error receiving order:', err)
-            alert('Error al recibir la orden. Por favor intenta nuevamente.')
-        } finally {
-            setProcessing(null)
-        }
+        setConfirmModal({ open: true, type: 'receive', orderId })
     }
 
-    const handleCancelOrder = async (orderId: string, event: React.MouseEvent) => {
+    const handleCancelOrder = (orderId: string, event: React.MouseEvent) => {
         event.stopPropagation()
         if (!user?.businessId) return
+        setConfirmModal({ open: true, type: 'cancel', orderId })
+    }
 
-        if (!confirm('¿Estás seguro de cancelar esta orden? Esta acción no se puede deshacer.')) {
-            return
-        }
-
+    const handleConfirmAction = async () => {
+        if (!user?.businessId || !confirmModal.orderId) return
         try {
-            setProcessing(orderId)
-            await purchaseOrderService.cancelPurchaseOrder(user.businessId, orderId)
+            setProcessing(confirmModal.orderId)
+            if (confirmModal.type === 'receive') {
+                await purchaseOrderService.receivePurchaseOrder(user.businessId, confirmModal.orderId)
+            } else {
+                await purchaseOrderService.cancelPurchaseOrder(user.businessId, confirmModal.orderId)
+            }
             await loadPurchaseOrders()
         } catch (err) {
-            console.error('Error cancelling order:', err)
-            alert('Error al cancelar la orden. Por favor intenta nuevamente.')
+            console.error('Error processing order:', err)
         } finally {
             setProcessing(null)
         }
@@ -205,6 +200,21 @@ function PurchaseOrders() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
+            <Modal
+                isOpen={confirmModal.open}
+                onClose={() => setConfirmModal(prev => ({ ...prev, open: false }))}
+                onConfirm={handleConfirmAction}
+                title={confirmModal.type === 'receive' ? 'Marcar como recibida' : 'Cancelar orden'}
+                message={
+                    confirmModal.type === 'receive'
+                        ? '¿Estás seguro de marcar esta orden como recibida? Esta acción actualizará el stock de los productos y no se puede deshacer.'
+                        : '¿Estás seguro de cancelar esta orden? Esta acción no se puede deshacer.'
+                }
+                type={confirmModal.type === 'receive' ? 'primary' : 'error'}
+                showCancelButton
+                confirmText={confirmModal.type === 'receive' ? 'Marcar como recibida' : 'Cancelar orden'}
+                cancelText="Volver"
+            />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
                 {/* Header */}
@@ -213,8 +223,8 @@ function PurchaseOrders() {
                         <span className="h-2 w-2 rounded-full bg-[#f74116]" />
                         Compras y Proveedores
                     </div>
-                    <div className="flex items-center justify-between">
-                        <div>
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
                             <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
                                 Órdenes de Compra
                             </h1>
@@ -225,10 +235,10 @@ function PurchaseOrders() {
                         </div>
                         <button
                             onClick={() => navigate('/purchase-orders/create')}
-                            className="flex items-center gap-2 px-6 py-3 text-white bg-[#f74116] rounded-lg hover:bg-[#d63912] transition-colors shadow-lg hover:shadow-xl"
+                            className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 text-white bg-[#f74116] rounded-xl hover:bg-[#d63912] transition-colors shadow-lg hover:shadow-xl text-sm sm:text-base font-semibold"
                         >
                             <IoAddCircleOutline className="w-5 h-5" />
-                            <span className="font-semibold">Nueva Orden</span>
+                            <span className="hidden xs:inline sm:inline">Nueva Orden</span>
                         </button>
                     </div>
                 </div>
@@ -241,18 +251,18 @@ function PurchaseOrders() {
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
 
                             {/* Left: Title and Total Summary */}
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center flex-shrink-0">
-                                    <IoCashOutline className="w-6 h-6 text-orange-600" />
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <IoCashOutline className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
                                 </div>
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-900">Órdenes Registradas</h2>
-                                    <div className="flex items-center gap-3 mt-1">
-                                        <p className="text-2xl font-bold text-orange-600">
+                                <div className="min-w-0">
+                                    <h2 className="text-base sm:text-xl font-bold text-gray-900">Órdenes Registradas</h2>
+                                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mt-0.5">
+                                        <p className="text-lg sm:text-2xl font-bold text-orange-600 truncate">
                                             {formatCurrency(totalAmount)}
                                         </p>
-                                        <span className="text-sm text-gray-500">
-                                            • {filteredOrders.length} {filteredOrders.length === 1 ? 'orden' : 'órdenes'}
+                                        <span className="text-xs sm:text-sm text-gray-500 whitespace-nowrap">
+                                            · {filteredOrders.length} {filteredOrders.length === 1 ? 'orden' : 'órdenes'}
                                         </span>
                                     </div>
                                 </div>
@@ -359,27 +369,24 @@ function PurchaseOrders() {
                                 {filteredOrders.map((order) => (
                                     <div
                                         key={order.id}
-                                        className="group p-6 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200 hover:shadow-sm"
+                                        className="group p-4 sm:p-6 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200 hover:shadow-sm"
                                     >
-                                        {/* Grid Layout: Proveedor | Estado | Fecha | Items | Total | Acciones */}
-                                        <div className="grid grid-cols-12 gap-4 items-center">
+                                        {/* Mobile layout: stacked card */}
+                                        <div className="flex flex-col gap-3 md:grid md:grid-cols-12 md:gap-4 md:items-center">
 
-                                            {/* Column 1-2: Icon + Proveedor */}
-                                            <div className="col-span-12 md:col-span-3 flex items-center gap-3">
+                                            {/* Row 1 mobile / Col 1 desktop: Icon + Proveedor + status */}
+                                            <div className="md:col-span-3 flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-gradient-to-br from-[#f74116]/10 to-[#f74116]/20 rounded-lg flex items-center justify-center flex-shrink-0">
                                                     <IoReceiptOutline className="w-5 h-5 text-[#f74116]" />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <h3 className="text-base font-semibold text-gray-900 truncate">
-                                                            {order.supplierName}
-                                                        </h3>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
+                                                    <h3 className="text-base font-semibold text-gray-900 truncate">
+                                                        {order.supplierName}
+                                                    </h3>
+                                                    <div className="flex items-center flex-wrap gap-2 mt-0.5">
                                                         <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
                                                             #{order.id.substring(0, 8).toUpperCase()}
                                                         </span>
-                                                        {/* Mobile: Show status here */}
                                                         <div className="md:hidden">
                                                             {getStatusBadge(order.status)}
                                                         </div>
@@ -387,32 +394,35 @@ function PurchaseOrders() {
                                                 </div>
                                             </div>
 
-                                            {/* Column 3: Estado (Desktop only) */}
-                                            <div className="hidden md:flex col-span-2 justify-center">
+                                            {/* Desktop only: Estado */}
+                                            <div className="hidden md:flex md:col-span-2 justify-center">
                                                 {getStatusBadge(order.status)}
                                             </div>
 
-                                            {/* Column 4: Fecha + Items */}
-                                            <div className="col-span-6 md:col-span-3">
-                                                <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
-                                                    <IoCalendarOutline className="w-4 h-4 flex-shrink-0" />
-                                                    <span className="truncate">{formatDate(order.createdAt)}</span>
+                                            {/* Row 2 mobile: Fecha + Items + Total in a single row */}
+                                            <div className="flex items-center justify-between md:contents">
+                                                {/* Fecha + Items */}
+                                                <div className="md:col-span-3">
+                                                    <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                                                        <IoCalendarOutline className="w-4 h-4 flex-shrink-0" />
+                                                        <span className="text-xs sm:text-sm">{formatDate(order.createdAt)}</span>
+                                                    </div>
+                                                    <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-full border border-blue-200">
+                                                        {order.itemCount} {order.itemCount === 1 ? 'item' : 'items'}
+                                                    </span>
                                                 </div>
-                                                <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-full border border-blue-200">
-                                                    {order.itemCount} {order.itemCount === 1 ? 'item' : 'items'}
-                                                </span>
+
+                                                {/* Total */}
+                                                <div className="md:col-span-2 text-right md:text-center">
+                                                    <div className="flex items-center justify-end md:justify-center gap-1 text-base sm:text-xl font-bold text-[#f74116]">
+                                                        <IoCashOutline className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                                                        <span>{formatCurrency(order.totalAmount)}</span>
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            {/* Column 5: Total */}
-                                            <div className="col-span-6 md:col-span-2 text-right md:text-center">
-                                                <div className="flex items-center justify-end md:justify-center gap-1 text-xl font-bold text-[#f74116]">
-                                                    <IoCashOutline className="w-5 h-5" />
-                                                    <span className="truncate">{formatCurrency(order.totalAmount)}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Column 6: Acciones */}
-                                            <div className="col-span-12 md:col-span-2 flex items-center justify-end gap-2">
+                                            {/* Acciones */}
+                                            <div className="md:col-span-2 flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={() => navigate(`/purchase-orders/${order.id}`)}
                                                     className="p-2 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"

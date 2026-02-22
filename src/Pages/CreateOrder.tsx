@@ -272,6 +272,13 @@ function CreateOrder() {
     }
 
     try {
+      // Verificar stock disponible
+      const stock = product.stockQuantity ?? 0
+      if (stock <= 0) {
+        setError('Este producto no tiene stock disponible')
+        return
+      }
+
       // Verificar si el producto ya está en la orden
       const existingItem = selectedSaleItems.find(item => item.productName === product.name)
 
@@ -279,6 +286,11 @@ function CreateOrder() {
       const totalQuantity = existingItem
         ? existingItem.quantity + quantity
         : quantity
+
+      if (totalQuantity > stock) {
+        setError(`Stock insuficiente. Disponible: ${stock}, en la orden: ${existingItem?.quantity ?? 0}`)
+        return
+      }
 
       await salesService.addItemToSale(businessId, selectedSale.id, {
         productId: product.id,
@@ -494,7 +506,7 @@ function CreateOrder() {
         </div>
 
         {/* Sección de órdenes abiertas */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 mb-8 hover:shadow-lg transition-all duration-200">
+        <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 mb-8 hover:shadow-lg transition-all duration-200 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">Órdenes Abiertas</h2>
             <span className="text-sm text-gray-500">{openSales.length} orden(es)</span>
@@ -505,45 +517,52 @@ function CreateOrder() {
               <p className="text-gray-500">No hay órdenes abiertas. Crea una nueva para comenzar.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="flex gap-3 overflow-x-auto pb-2">
               {openSales.map(sale => {
                 // Calcular total para cada orden en la lista
                 const saleTotal = sale.items?.reduce((sum, item) => {
                   return sum + (item.lineTotal || 0)
                 }, 0) || 0
 
+                const isSelected = selectedSale?.id === sale.id
+
                 return (
                   <button
                     key={sale.id}
                     onClick={() => handleSelectSale(sale)}
                     className={`
-                      p-4 rounded-lg border-2 text-left transition-all duration-200
-                      ${selectedSale?.id === sale.id
+                      flex-shrink-0 w-48 p-3 rounded-xl border-2 text-left transition-all duration-200
+                      ${isSelected
                         ? 'border-[#f74116] bg-[#f74116]/5 shadow-md'
-                        : 'border-gray-200 hover:border-[#f74116]/50 hover:shadow-sm'
+                        : 'border-gray-200 hover:border-[#f74116]/40 hover:shadow-sm bg-white'
                       }
                     `}
                     type="button"
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">
-                          Orden #{sale.id.slice(0, 8)}
-                        </h3>
-                      </div>
-                      {selectedSale?.id === sale.id && (
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#f74116]">
-                          <IoCheckmarkCircle className="text-white" />
+                    {/* Cabecera: número de orden + check */}
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`text-xs font-bold truncate ${isSelected ? 'text-[#f74116]' : 'text-gray-700'}`}>
+                        #{sale.id.slice(0, 8)}
+                      </span>
+                      {isSelected && (
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#f74116] flex-shrink-0">
+                          <IoCheckmarkCircle className="text-white w-3.5 h-3.5" />
                         </span>
                       )}
                     </div>
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                      <p className="text-sm text-gray-600">
-                        Total: <span className="font-semibold text-gray-900">${saleTotal.toFixed(2)}</span>
-                      </p>
-                    </div>
-                    {/* Nota de la orden */}
-                    <div className="mt-3 pt-3 border-t border-gray-100">
+
+                    {/* Total */}
+                    <p className={`text-base font-bold mb-2 ${isSelected ? 'text-[#f74116]' : 'text-gray-900'}`}>
+                      ${saleTotal.toFixed(2)}
+                    </p>
+
+                    {/* Items count */}
+                    <p className="text-xs text-gray-400 mb-2">
+                      {sale.items?.length ?? 0} producto(s)
+                    </p>
+
+                    {/* Nota de la orden — se mantiene igual */}
+                    <div className="pt-2 border-t border-gray-100">
                       {sale.note ? (
                         <div className="bg-amber-50 border border-amber-200 rounded-md p-2">
                           <div className="flex items-start justify-between gap-1">
@@ -888,14 +907,20 @@ function CreateOrder() {
               </div>
 
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                {filteredProducts.map(product => (
-                  <OrderProductCard
-                    key={product.id}
-                    product={product}
-                    categories={categories}
-                    onAddToCart={handleAddToOrder}
-                  />
-                ))}
+                {filteredProducts.map(product => {
+                  const cartQty = selectedSaleItems
+                    .filter(item => item.productName === product.name)
+                    .reduce((sum, item) => sum + item.quantity, 0)
+                  return (
+                    <OrderProductCard
+                      key={product.id}
+                      product={product}
+                      categories={categories}
+                      onAddToCart={handleAddToOrder}
+                      currentCartQuantity={cartQty}
+                    />
+                  )
+                })}
               </div>
             </>
           )}

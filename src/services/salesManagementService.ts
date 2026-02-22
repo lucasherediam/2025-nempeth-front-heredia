@@ -29,6 +29,16 @@ export const salesManagementService = {
     }
   },
 
+  async getClosedSales(businessId: string): Promise<SaleResponse[]> {
+    try {
+      const response = await api.get(`/businesses/${businessId}/sales?open=false`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching closed sales:', error)
+      throw error
+    }
+  },
+
   async getSaleById(businessId: string, saleId: string): Promise<SaleResponse> {
     try {
       const response = await api.get(`/businesses/${businessId}/sales/${saleId}`)

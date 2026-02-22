@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/useAuth'
 import LoadingScreen from '../components/LoadingScreen'
+import Modal from '../components/Modal'
 import { purchaseOrderService, type PurchaseOrderDetail, type PurchaseOrderStatus } from '../services/purchaseOrderService'
 import {
     IoArrowBackOutline,
@@ -20,6 +21,10 @@ function PurchaseOrderDetails() {
     const [loading, setLoading] = useState(true)
     const [processing, setProcessing] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [confirmModal, setConfirmModal] = useState<{
+        open: boolean
+        type: 'receive' | 'cancel'
+    }>({ open: false, type: 'receive' })
 
     useEffect(() => {
         if (user?.businessId && purchaseOrderId) {
@@ -46,39 +51,28 @@ function PurchaseOrderDetails() {
         }
     }
 
-    const handleReceiveOrder = async () => {
+    const handleReceiveOrder = () => {
         if (!user?.businessId || !purchaseOrderId || !order) return
-
-        if (!confirm('¿Estás seguro de marcar esta orden como recibida? Esta acción actualizará el stock de los productos y no se puede deshacer.')) {
-            return
-        }
-
-        try {
-            setProcessing(true)
-            await purchaseOrderService.receivePurchaseOrder(user.businessId, purchaseOrderId)
-            await loadOrderDetails()
-        } catch (err) {
-            console.error('Error receiving order:', err)
-            alert('Error al recibir la orden. Por favor intenta nuevamente.')
-        } finally {
-            setProcessing(false)
-        }
+        setConfirmModal({ open: true, type: 'receive' })
     }
 
-    const handleCancelOrder = async () => {
+    const handleCancelOrder = () => {
         if (!user?.businessId || !purchaseOrderId || !order) return
+        setConfirmModal({ open: true, type: 'cancel' })
+    }
 
-        if (!confirm('¿Estás seguro de cancelar esta orden? Esta acción no se puede deshacer.')) {
-            return
-        }
-
+    const handleConfirmAction = async () => {
+        if (!user?.businessId || !purchaseOrderId) return
         try {
             setProcessing(true)
-            await purchaseOrderService.cancelPurchaseOrder(user.businessId, purchaseOrderId)
+            if (confirmModal.type === 'receive') {
+                await purchaseOrderService.receivePurchaseOrder(user.businessId, purchaseOrderId)
+            } else {
+                await purchaseOrderService.cancelPurchaseOrder(user.businessId, purchaseOrderId)
+            }
             await loadOrderDetails()
         } catch (err) {
-            console.error('Error cancelling order:', err)
-            alert('Error al cancelar la orden. Por favor intenta nuevamente.')
+            console.error('Error processing order:', err)
         } finally {
             setProcessing(false)
         }
@@ -162,6 +156,21 @@ function PurchaseOrderDetails() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
+            <Modal
+                isOpen={confirmModal.open}
+                onClose={() => setConfirmModal(prev => ({ ...prev, open: false }))}
+                onConfirm={handleConfirmAction}
+                title={confirmModal.type === 'receive' ? 'Marcar como recibida' : 'Cancelar orden'}
+                message={
+                    confirmModal.type === 'receive'
+                        ? '¿Estás seguro de marcar esta orden como recibida? Esta acción actualizará el stock de los productos y no se puede deshacer.'
+                        : '¿Estás seguro de cancelar esta orden? Esta acción no se puede deshacer.'
+                }
+                type={confirmModal.type === 'receive' ? 'primary' : 'error'}
+                showCancelButton
+                confirmText={confirmModal.type === 'receive' ? 'Marcar como recibida' : 'Cancelar orden'}
+                cancelText="Volver"
+            />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
                 {/* Header */}
@@ -214,7 +223,7 @@ function PurchaseOrderDetails() {
                             {getStatusBadge(order.status)}
                             <div className="text-center lg:text-right">
                                 <p className="text-sm text-gray-600 mb-1">Total de la orden</p>
-                                <div className="text-3xl font-bold text-[#f74116]">
+                                <div className="text-xl sm:text-3xl font-bold text-[#f74116] break-all">
                                     {formatCurrency(order.totalAmount)}
                                 </div>
                             </div>
@@ -242,34 +251,49 @@ function PurchaseOrderDetails() {
                                 key={item.id}
                                 className="group p-5 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200 hover:shadow-sm"
                             >
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.productName}</h3>
-                                    </div>
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <h3 className="text-lg font-semibold text-gray-900">{item.productName}</h3>
 
-                                    <div className="flex items-center gap-6">
-                                        <div className="text-center">
-                                            <p className="text-xs font-semibold text-gray-600 mb-1">Cantidad</p>
-                                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                <span className="text-lg font-bold text-blue-600">{item.quantity}</span>
+                                    {/* Mobile: stacked rows label + value */}
+                                    <div className="flex flex-col gap-2 sm:hidden">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-semibold text-gray-500">Cantidad</span>
+                                            <div className="bg-blue-100 px-3 py-1.5 rounded-lg">
+                                                <span className="text-sm font-bold text-blue-600">{item.quantity}</span>
                                             </div>
                                         </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-semibold text-gray-500">Costo Unit.</span>
+                                            <div className="bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200">
+                                                <span className="text-sm font-bold text-orange-600">{formatCurrency(item.unitCost)}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-semibold text-gray-500">Subtotal</span>
+                                            <div className="bg-green-50 px-3 py-1.5 rounded-lg border border-green-200">
+                                                <span className="text-sm font-bold text-green-600">{formatCurrency(item.totalCost)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
 
+                                    {/* Desktop: side by side */}
+                                    <div className="hidden sm:flex items-center gap-6">
+                                        <div className="text-center">
+                                            <p className="text-xs font-semibold text-gray-600 mb-1">Cantidad</p>
+                                            <div className="min-w-[48px] bg-blue-100 px-3 py-2 rounded-lg flex items-center justify-center">
+                                                <span className="text-base font-bold text-blue-600">{item.quantity}</span>
+                                            </div>
+                                        </div>
                                         <div className="text-center">
                                             <p className="text-xs font-semibold text-gray-600 mb-1">Costo Unit.</p>
                                             <div className="bg-orange-50 px-3 py-2 rounded-lg border border-orange-200">
-                                                <span className="text-sm font-bold text-orange-600">
-                                                    {formatCurrency(item.unitCost)}
-                                                </span>
+                                                <span className="text-sm font-bold text-orange-600">{formatCurrency(item.unitCost)}</span>
                                             </div>
                                         </div>
-
                                         <div className="text-center">
                                             <p className="text-xs font-semibold text-gray-600 mb-1">Subtotal</p>
                                             <div className="bg-green-50 px-3 py-2 rounded-lg border border-green-200">
-                                                <span className="text-sm font-bold text-green-600">
-                                                    {formatCurrency(item.totalCost)}
-                                                </span>
+                                                <span className="text-sm font-bold text-green-600">{formatCurrency(item.totalCost)}</span>
                                             </div>
                                         </div>
                                     </div>

@@ -503,35 +503,62 @@ function Stock() {
                         </div>
                     ) : (
                         <>
-                            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                            <div className="px-4 py-4 border-b border-gray-200 bg-gray-50 sm:px-6">
                                 <h2 className="text-lg font-bold text-gray-900">Inventario Actual</h2>
                                 <p className="mt-1 text-sm text-gray-500">
                                     Mostrando {filteredStockItems.length} de {stockItems.length} productos
                                 </p>
                             </div>
 
-                            <div className="overflow-x-auto">
+                            {/* Mobile: card list */}
+                            <div className="divide-y divide-gray-100 md:hidden">
+                                {filteredStockItems.map((item) => (
+                                    <div key={item.productId} className="px-4 py-4 hover:bg-gray-50 transition-colors">
+                                        <div className="flex items-start justify-between gap-3 mb-3">
+                                            <div className="min-w-0">
+                                                <p className="font-semibold text-gray-900 truncate">{item.productName}</p>
+                                                <p className="text-xs text-gray-500 mt-0.5">{item.categoryName}</p>
+                                            </div>
+                                            {getStatusBadge(item.status)}
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+                                            <div className="bg-gray-50 rounded-lg px-3 py-2">
+                                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Stock actual</p>
+                                                <p className="font-semibold text-gray-900">{item.stockQuantity.toFixed(2)}</p>
+                                                <p className="text-xs text-gray-500">{item.stockUnit.toLowerCase().replace('_', ' ')}</p>
+                                            </div>
+                                            <div className="bg-gray-50 rounded-lg px-3 py-2">
+                                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Punto de reorden</p>
+                                                <p className="font-semibold text-gray-900">{item.reorderPoint.toFixed(2)}</p>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => handleEditStock(item)}
+                                            disabled={processing}
+                                            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-[#f74116] bg-[#f74116]/10 rounded-lg hover:bg-[#f74116]/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                            Editar Stock
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Desktop: table */}
+                            <div className="hidden md:block overflow-x-auto">
                                 <table className="w-full">
                                     <thead className="bg-gray-50 border-b border-gray-200">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Producto
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Categoría
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Stock Actual
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Punto de Reorden
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Estado
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Acciones
-                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Producto</th>
+                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Categoría</th>
+                                            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Stock Actual</th>
+                                            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Punto de Reorden</th>
+                                            <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Estado</th>
+                                            <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
@@ -544,17 +571,11 @@ function Stock() {
                                                     <div className="text-sm text-gray-600">{item.categoryName}</div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                    <div className="text-sm font-semibold text-gray-900">
-                                                        {item.stockQuantity.toFixed(2)}
-                                                    </div>
-                                                    <div className="text-xs text-gray-500">
-                                                        {item.stockUnit.toLowerCase().replace('_', ' ')}
-                                                    </div>
+                                                    <div className="text-sm font-semibold text-gray-900">{item.stockQuantity.toFixed(2)}</div>
+                                                    <div className="text-xs text-gray-500">{item.stockUnit.toLowerCase().replace('_', ' ')}</div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                    <div className="text-sm text-gray-600">
-                                                        {item.reorderPoint.toFixed(2)}
-                                                    </div>
+                                                    <div className="text-sm text-gray-600">{item.reorderPoint.toFixed(2)}</div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center">
                                                     {getStatusBadge(item.status)}

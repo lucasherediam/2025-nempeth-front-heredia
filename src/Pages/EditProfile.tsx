@@ -203,12 +203,12 @@ function EditProfile() {
           {/* Profile Header */}
           <div className="bg-gradient-to-br from-[#f74116] to-[#e63912] p-6 rounded-t-2xl">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold text-white border-2 border-white/30">
+              <div className="w-14 h-14 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold text-white border-2 border-white/30">
                 {formData.nombre.charAt(0).toUpperCase() || 'U'}
               </div>
-              <div className="text-white">
-                <h2 className="text-xl font-bold">{formData.nombre} {formData.apellido}</h2>
-                <p className="text-white/90 text-sm">{formData.email}</p>
+              <div className="text-white min-w-0">
+                <h2 className="text-lg font-bold truncate">{formData.nombre} {formData.apellido}</h2>
+                <p className="text-white/90 text-sm truncate">{formData.email}</p>
               </div>
             </div>
           </div>
@@ -276,9 +276,9 @@ function EditProfile() {
 
               {/* Security Section */}
               <div className="space-y-6">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center flex-shrink-0">
                       <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
@@ -287,13 +287,13 @@ function EditProfile() {
                   </div>
                   <button
                     onClick={() => setShowPasswordSection(!showPasswordSection)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex-shrink-0 ${
                       showPasswordSection 
                         ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' 
                         : 'bg-[#f74116]/10 text-[#f74116] hover:bg-[#f74116]/20'
                     }`}
                   >
-                    {showPasswordSection ? 'Cancelar' : 'Cambiar Contraseña'}
+                    {showPasswordSection ? 'Cancelar' : 'Cambiar contraseña'}
                   </button>
                 </div>
 
@@ -370,11 +370,11 @@ function EditProfile() {
                       </div>
                     </div>
 
-                    <div className="flex justify-end pt-2">
+                    <div className="pt-2">
                       <button
                         onClick={handleChangePassword}
                         disabled={!canChangePassword || isLoading}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isLoading && (
                           <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -397,7 +397,7 @@ function EditProfile() {
               <button
                 onClick={handleSaveProfile}
                 disabled={!canSaveProfile || isLoading}
-                className="inline-flex items-center gap-2 px-8 py-3 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 {isLoading && (
                   <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -435,7 +435,7 @@ function EditProfile() {
             <button
               onClick={handleDeleteAccount}
               disabled={isLoading}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading && (
                 <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">

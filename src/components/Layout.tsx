@@ -17,12 +17,12 @@ function Layout({ children }: LayoutProps) {
   }
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-white overflow-x-hidden">
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
-      
+
       {/* Contenido principal */}
-      <div className="flex min-h-screen flex-1 flex-col lg:ml-80">
+      <div className="flex min-h-screen flex-1 flex-col lg:ml-80 min-w-0">
         {/* Botón para abrir sidebar en móvil */}
         <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 shadow-sm lg:hidden">
           <button
@@ -34,9 +34,9 @@ function Layout({ children }: LayoutProps) {
             </svg>
           </button>
         </div>
-        
+
         {/* Contenido de la página */}
-        <main className="flex-1">
+        <main className="flex-1 min-w-0">
           {children}
         </main>
       </div>
