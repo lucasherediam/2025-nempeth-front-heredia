@@ -17,17 +17,12 @@ export default function Ranking() {
 
   useEffect(() => {
     const fetchRankings = async () => {
-      console.log('🔍 Ranking - Estado de autenticación:', { authLoading, user })
-      console.log('🔍 Ranking - BusinessId:', user?.businessId)
-      
       // Esperar a que termine la autenticación
       if (authLoading) {
-        console.log('⏳ Ranking - Esperando autenticación...')
         return
       }
       
       if (!user?.businessId) {
-        console.log('⚠️ Ranking - No hay businessId disponible')
         setIsLoading(false)
         setError('No se pudo obtener la información del negocio. Por favor, inicia sesión.')
         return
@@ -36,10 +31,7 @@ export default function Ranking() {
       try {
         setIsLoading(true)
         setError(null)
-        console.log('📡 Ranking - Llamando al endpoint con businessId:', user.businessId)
         const rankingsData = await rankingService.getBusinessRankings(user.businessId)
-        console.log('✅ Ranking - Datos recibidos:', rankingsData)
-        console.log('✅ Ranking - Cantidad de rankings:', rankingsData.length)
         setRankings(rankingsData)
       } catch (err) {
         console.error('❌ Ranking - Error al cargar el ranking:', err)
@@ -103,8 +95,6 @@ export default function Ranking() {
         return 'shadow-md shadow-rose-200/30 border-rose-200'
     }
   }
-
-  console.log('🎨 Ranking - Renderizando con:', { isLoading, error, rankingsCount: rankings.length, rankings })
 
   if (isLoading) {
     return <LoadingScreen message="Cargando ranking..." />

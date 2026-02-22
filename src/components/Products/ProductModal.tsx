@@ -10,9 +10,10 @@ interface ProductModalProps {
   error?: string | null
   categories: CategoryType[]
   prefilledName?: string
+  existingProducts?: Product[]
 }
 
-function ProductModal({ isOpen, onClose, onSave, product, error, categories, prefilledName }: ProductModalProps) {
+function ProductModal({ isOpen, onClose, onSave, product, error, categories, prefilledName, existingProducts = [] }: ProductModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -24,6 +25,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
     reorderPoint: 0
   })
   const [saving, setSaving] = useState(false)
+  const [nameError, setNameError] = useState<string | null>(null)
 
   useEffect(() => {
     if (product) {
@@ -50,6 +52,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
       })
     }
     setSaving(false) // Resetear estado de guardado
+    setNameError(null)
   }, [product, isOpen, categories, prefilledName])
 
   // Prevenir scroll del fondo cuando el modal está abierto
@@ -65,6 +68,18 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validar nombre duplicado
+    const trimmedName = formData.name.trim().toLowerCase()
+    const isDuplicate = existingProducts.some(
+      (p) => p.name.trim().toLowerCase() === trimmedName && p.id !== product?.id
+    )
+    if (isDuplicate) {
+      setNameError('Ya existe un producto con este nombre')
+      return
+    }
+    setNameError(null)
+
     if (formData.name.trim() && formData.description.trim() && formData.price > 0 && formData.cost >= 0 && formData.categoryId) {
       setSaving(true)
       try {
@@ -84,6 +99,11 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+
+    // Limpiar error de nombre duplicado cuando el usuario edita el nombre
+    if (name === 'name' && nameError) {
+      setNameError(null)
+    }
 
     let finalValue = value
     if (name === 'description' && value.length > 300) {
@@ -135,8 +155,15 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories, pre
                 onChange={handleChange}
                 required
                 placeholder="Ingresa el nombre del producto"
-                className="w-full rounded-lg border-2 border-gray-200 px-3 py-2.5 text-sm sm:text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+                className={`w-full rounded-lg border-2 px-3 py-2.5 text-sm sm:text-base transition focus:outline-none focus:ring-4 ${
+                  nameError
+                    ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
+                    : 'border-gray-200 focus:border-[#f74116] focus:ring-[#f74116]/20'
+                }`}
               />
+              {nameError && (
+                <p className="text-xs text-red-600 mt-1 font-medium">{nameError}</p>
+              )}
             </div>
 
             <div className="space-y-1">

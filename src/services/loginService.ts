@@ -180,14 +180,9 @@ export class AuthService {
     token: string,
   ): Promise<ValidateTokenResponse> {
     try {
-      console.log(
-        'Haciendo request a:',
-        `/password/validate?token=${encodeURIComponent(token)}`,
-      );
       const response = await api.get<ValidateTokenResponse>(
         `auth/password/validate?token=${encodeURIComponent(token)}`,
       );
-      console.log('Respuesta del servidor:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error en validación de token:', error);
@@ -231,17 +226,11 @@ export class AuthService {
   ): Promise<ResetPasswordResponse> {
     try {
       const request: ResetPasswordRequest = { token, newPassword };
-      console.log('Haciendo request a /password/reset con:', {
-        token: token.substring(0, 10) + '...',
-        newPassword: '[OCULTA]',
-      });
-
       // Hacer request sin el header de Authorization para evitar 403
       const response = await api.post<ResetPasswordResponse>(
         'auth/password/reset',
         request,
       );
-      console.log('Respuesta del servidor:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error en reset password:', error);

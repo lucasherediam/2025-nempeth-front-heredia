@@ -16,6 +16,7 @@ export interface SaleItem {
   categoryName?: string
   quantity: number
   unitCost: number
+  unitPrice?: number
   lineTotal: number
 }
 

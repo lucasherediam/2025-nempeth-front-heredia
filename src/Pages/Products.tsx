@@ -609,6 +609,7 @@ function Products() {
           error={error}
           categories={categories}
           prefilledName={prefilledProductName}
+          existingProducts={products}
         />
 
         <ConfirmDeleteModal
