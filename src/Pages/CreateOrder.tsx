@@ -683,7 +683,7 @@ function CreateOrder() {
                     ) : (
                       <div className="space-y-3">
                         {selectedSaleItems.map((item) => {
-                          const unitCost = item.unitCost || 0
+                          const unitPrice = item.unitPrice || 0
                           const quantity = item.quantity || 0
                           const subtotal = item.lineTotal || 0
 
@@ -697,7 +697,7 @@ function CreateOrder() {
                                   <p className="font-semibold text-gray-900 mb-1">{item.productName || 'Producto'}</p>
                                   <p className="text-sm text-gray-500">{item.categoryName}</p>
                                   <p className="text-sm text-gray-600 mt-2">
-                                    {quantity} × ${unitCost.toFixed(2)}
+                                    {quantity} × ${unitPrice.toFixed(2)}
                                   </p>
                                 </div>
                                 <div className="text-right">
@@ -946,7 +946,7 @@ function CreateOrder() {
                 <span className="font-semibold">Producto:</span> {editingItem.productName}
               </p>
               <p className="text-sm text-gray-600 mb-4">
-                Precio unitario: ${(editingItem.unitCost || 0).toFixed(2)}
+                Precio unitario: ${(editingItem.unitPrice || 0).toFixed(2)}
               </p>
 
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -962,7 +962,7 @@ function CreateOrder() {
               />
 
               <p className="text-sm text-gray-600 mt-2">
-                Nuevo subtotal: ${((editingItem.unitCost || 0) * editQuantity).toFixed(2)}
+                Nuevo subtotal: ${((editingItem.unitPrice || 0) * editQuantity).toFixed(2)}
               </p>
             </div>
 

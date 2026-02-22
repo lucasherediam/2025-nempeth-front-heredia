@@ -48,8 +48,6 @@ export const businessService = {
   ): Promise<BusinessDetailResponse> => {
     try {
       const response = await api.get(`/businesses/${businessId}/detail`);
-      console.log(await api.get(`/businesses/${businessId}/detail`));
-
       return response.data;
     } catch (error) {
       console.error('Error al obtener detalles del negocio:', error);

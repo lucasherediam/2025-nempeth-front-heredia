@@ -31,8 +31,6 @@ function ResetPassword() {
         return
       }
 
-      console.log('Validando token:', token)
-
       try {
         const response = await AuthService.validateResetToken(token)
         console.log('Respuesta de validación:', response)

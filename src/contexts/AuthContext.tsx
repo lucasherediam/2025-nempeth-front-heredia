@@ -155,7 +155,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const completeUserData = await fetchCompleteUserData(response.token);
           if (completeUserData) {
             setUser(completeUserData);
-            console.log('Complete user data loaded:', completeUserData);
           } else {
             // Si no se pueden obtener los datos completos, fallar el login
             throw new Error('No se pudieron cargar los datos completos del usuario');
